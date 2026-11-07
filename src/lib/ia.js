@@ -1,5 +1,6 @@
 // "Segunda opinião": correção da redação com IA (Edge Function corrigir-redacao-ia no Supabase).
 import { supabase } from './supabase.js'
+import { chamarIA, iaAtivaNoSite } from './ocr.js'
 
 /** Converte os desvios apontados pela IA em marcações no texto (localiza o trecho exato). */
 export function marcasDaIA(texto, desvios = []) {
@@ -21,18 +22,8 @@ export function marcasDaIA(texto, desvios = []) {
 }
 
 export async function corrigirComIA({ texto, tema }) {
-  if (!supabase) throw new Error('A correção com IA precisa do Supabase configurado.')
-  const { data: sessao } = await supabase.auth.getSession()
-  if (!sessao.session) throw new Error('Entre na sua conta para usar a correção com IA.')
-  const { data, error } = await supabase.functions.invoke('corrigir-redacao-ia', { body: { texto, tema: tema?.titulo || '' } })
-  if (error) {
-    let msg = 'A correção com IA não está disponível agora.'
-    try {
-      const corpo = await error.context?.json?.()
-      if (corpo?.erro) msg = corpo.erro
-    } catch { /* resposta sem corpo JSON */ }
-    if (error.name === 'FunctionsFetchError' || /Failed to send/i.test(error.message)) msg = 'A função de correção com IA ainda não foi publicada no Supabase.'
-    throw new Error(msg)
-  }
+  if (!supabase) throw new Error('A correção com IA precisa das contas (Supabase) configuradas.')
+  if (!(await iaAtivaNoSite())) throw new Error('A correção com IA ainda não foi ativada neste site.')
+  const data = await chamarIA('corrigir-redacao-ia', { texto, tema: tema?.titulo || '' })
   return { ...data, marcas: marcasDaIA(texto, data.desvios), criadoEm: new Date().toISOString() }
 }

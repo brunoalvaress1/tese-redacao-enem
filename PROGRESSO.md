@@ -159,3 +159,15 @@ Limitações conhecidas (honestas):
 - Verificação em produção: rotas internas respondem 200, correção completa funcionando (mesma nota do teste local),
   cadastro com Supabase ativo, nenhum erro no console.
 - Pendências do dono: secrets do robô no GitHub (gravação bloqueada pelas permissões) e colar o `schema.sql` atualizado.
+
+### Passo 7 — Foto real do usuário falhou (2026-11-07)
+- Problema relatado: foto real de redação manuscrita (folha do ENEM) → leitor do navegador com confiança 37%, texto ilegível.
+- Diagnóstico: o Tesseract é para texto impresso. Mesmo no melhor caso (recorte da área, ampliação 3×, realce da tinta azul)
+  a confiança foi 31% → o leitor gratuito não serve para letra de mão real. A leitura com IA não estava ativa.
+- Validação com a redação do usuário transcrita fielmente: motor deu 920 contra 880 do corretor humano. Ajustes:
+  C5 (verbo dentro da finalidade não é ação; agente após "cabe ao…"; ação implícita limita a 160) e C1
+  ("Ministério Pública", "o vício… têm"). **Depois dos ajustes: 880 — igual à nota humana** (C1 200, C5 160 iguais à folha).
+- Leitura com IA movida para **funções da Vercel** (`/api`): basta a variável `ANTHROPIC_API_KEY` na Vercel.
+  Funções testadas localmente: sem chave (503), sem login (401), token inválido validado no Supabase real (401), método errado (405).
+- Novo detector de leitura ruim: o site não mostra mais o texto ilegível; explica e oferece digitar/tentar outra foto.
+- Testes: **42/42**.

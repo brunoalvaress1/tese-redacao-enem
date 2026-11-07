@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Sparkles, LogIn, TriangleAlert, ArrowRight, Lightbulb, ChevronDown, Bot } from 'lucide-react'
 import { Botao, Cartao, Selo, cx } from './ui.jsx'
 import { COMP, CHAVES, corNota } from '../lib/competencias.js'
 import { corrigirComIA } from '../lib/ia.js'
+import { iaAtivaNoSite } from '../lib/ocr.js'
 import { salvarCorrecao } from '../lib/armazenamento.js'
 import { useAuth } from '../lib/auth.jsx'
 
@@ -14,8 +15,10 @@ export default function SegundaOpiniao({ correcao, onAtualizar }) {
   const [erro, setErro] = useState('')
   const [aberto, setAberto] = useState('c1')
   const ia = correcao.ia
+  const [iaSite, setIaSite] = useState(false)
+  useEffect(() => { iaAtivaNoSite().then(setIaSite) }, [])
 
-  if (!ativo) return null
+  if (!ativo || (!iaSite && !ia)) return null
 
   const pedir = async () => {
     setErro('')

@@ -107,23 +107,79 @@ export function limparTranscricao(bruto) {
     .join('\n')
 }
 
-/** Indica se a leitura com IA está disponível (Supabase configurado + usuário logado). */
-export async function iaDisponivel() {
-  if (!supabase) return false
+const PALAVRAS_COMUNS = new Set(
+  ('a o e é de da do das dos em no na nos nas um uma por para com que se não mais como ao à os as ser são ' +
+    'isso esse essa este esta sua seu pelo pela entre sobre também já quando muito ainda pois sociedade brasil ' +
+    'forma assim deve pode há tem uso vida social sociais povo maneira modo dessa desse nesse nessa').split(' '),
+)
+
+/**
+ * Avalia se um texto lido por OCR parece português de verdade (e não "lixo" de reconhecimento).
+ * @returns {{ ok: boolean, nota: number }} nota de 0 a 1
+ */
+export function avaliarLeitura(texto, confianca = 100) {
+  const tokens = (texto.match(/\S+/g) || []).map((t) => t.replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '')).filter(Boolean)
+  if (tokens.length < 15) return { ok: false, nota: 0 }
+  const plausiveis = tokens.filter((t) => /^\p{Ll}[\p{Ll}-]*$|^\p{Lu}\p{Ll}[\p{Ll}-]*$|^\p{Lu}$/u.test(t) && /[aeiouáéíóúâêôãõ]/i.test(t)).length
+  const comuns = tokens.filter((t) => PALAVRAS_COMUNS.has(t.toLowerCase())).length
+  const nota = Math.min(1, (plausiveis / tokens.length) * 0.5 + Math.min(1, comuns / tokens.length / 0.3) * 0.5)
+  return { ok: confianca >= 55 && nota >= 0.7, nota: Math.round(nota * 100) / 100 }
+}
+
+let statusIA = null
+/** O site tem a IA ativada? (consulta /api/status-ia uma vez por sessão) */
+export async function iaAtivaNoSite() {
+  if (statusIA !== null) return statusIA
+  try {
+    const r = await fetch('/api/status-ia', { headers: { Accept: 'application/json' } })
+    const tipo = r.headers.get('content-type') || ''
+    statusIA = r.ok && tipo.includes('json') ? !!(await r.json()).ia : false
+  } catch {
+    statusIA = false
+  }
+  return statusIA
+}
+
+async function tokenDoUsuario() {
+  if (!supabase) return null
   const { data } = await supabase.auth.getSession()
-  return !!data.session
+  return data.session?.access_token || null
+}
+
+/** A leitura com IA pode ser usada agora? (IA ativa no site + aluno logado) */
+export async function iaDisponivel() {
+  if (!(await iaAtivaNoSite())) return false
+  return !!(await tokenDoUsuario())
+}
+
+/** Chama uma função de IA do site (Vercel) com o login do aluno. */
+export async function chamarIA(rota, corpo) {
+  const token = await tokenDoUsuario()
+  if (!token) throw new Error('Entre na sua conta (grátis) para usar os recursos com IA.')
+  let r
+  try {
+    r = await fetch(`/api/${rota}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(corpo),
+    })
+  } catch {
+    throw new Error('Sem conexão com o servidor. Verifique sua internet.')
+  }
+  const dados = await r.json().catch(() => ({}))
+  if (!r.ok) throw new Error(dados.erro || 'Os recursos com IA não estão disponíveis agora.')
+  return dados
 }
 
 async function transcreverComIA(arquivos, aoProgredir) {
   aoProgredir?.({ etapa: 'Preparando as fotos…', progresso: 0.1 })
   const imagens = []
   for (const f of arquivos) imagens.push(await comprimirParaEnvio(f))
-  aoProgredir?.({ etapa: 'Lendo a redação com IA…', progresso: 0.35 })
-  const { data, error } = await supabase.functions.invoke('transcrever-redacao', { body: { imagens } })
-  if (error) throw new Error(error.message || 'Falha na leitura com IA')
-  if (!data?.texto) throw new Error(data?.erro || 'A IA não retornou texto')
+  aoProgredir?.({ etapa: 'Lendo sua letra com IA… (leva uns 15 segundos)', progresso: 0.4 })
+  const data = await chamarIA('transcrever-redacao', { imagens })
+  if (!data?.texto) throw new Error('A IA não encontrou texto na foto.')
   aoProgredir?.({ etapa: 'Concluído', progresso: 1 })
-  return { texto: limparTranscricao(data.texto), fonte: 'ia', confianca: null }
+  return { texto: limparTranscricao(data.texto), fonte: 'ia', confianca: null, qualidade: { ok: true, nota: 1 } }
 }
 
 async function transcreverComTesseract(arquivos, aoProgredir) {
@@ -151,7 +207,8 @@ async function transcreverComTesseract(arquivos, aoProgredir) {
       confs.push(data.confidence)
     }
     const confianca = Math.round(confs.reduce((a, b) => a + b, 0) / confs.length)
-    return { texto: limparTranscricao(textos.join('\n\n')), fonte: 'navegador', confianca }
+    const texto = limparTranscricao(textos.join('\n\n'))
+    return { texto, fonte: 'navegador', confianca, qualidade: avaliarLeitura(texto, confianca) }
   } finally {
     await worker.terminate()
   }
@@ -166,9 +223,9 @@ export async function transcreverFotos(arquivos, { aoProgredir, usarIA = true } 
     try {
       return await transcreverComIA(arquivos, aoProgredir)
     } catch (e) {
-      console.warn('[OCR] IA indisponível, usando o leitor do navegador:', e.message)
+      console.warn('[OCR] leitura com IA falhou, usando o leitor do navegador:', e.message)
       const r = await transcreverComTesseract(arquivos, aoProgredir)
-      return { ...r, aviso: 'A leitura com IA não está disponível agora; usamos o leitor do navegador.' }
+      return { ...r, aviso: `A leitura com IA falhou (${e.message}). Usamos o leitor do navegador.` }
     }
   }
   return transcreverComTesseract(arquivos, aoProgredir)

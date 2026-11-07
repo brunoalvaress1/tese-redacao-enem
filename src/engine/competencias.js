@@ -530,6 +530,12 @@ const RE_DETALHE = new RegExp(
   'giu',
 )
 
+const RE_ATRIBUICAO = /(?<![\p{L}])(?:cabe|caberia|compete|competiria|incumbe|é\s+(?:dever|papel|função|responsabilidade))\s+(?:a|ao|à|aos|às|d[oa]s?)\s+/giu
+const RE_ACAO_NOMINAL = rePalavra(
+  'palestras?|campanhas?|projetos?|programas?|oficinas?|cursos?|debates?|rodas\\s+de\\s+conversa|fiscalização|criação|' +
+  'implementação|ampliação|investimentos?|políticas\\s+públicas|capacitações?|mutirões|propagandas?|ações\\s+educativas',
+)
+
 function primeiro(re, texto, base) {
   re.lastIndex = 0
   const m = re.exec(texto)
@@ -549,30 +555,64 @@ export function analisarProposta(texto, pars, temaGrupos) {
   const base = alvo.inicio
   const t = alvo.texto
 
+  // 1) agente: de preferência o que vem logo após "cabe ao", "compete à", "é dever do"…
   let agente = null
-  RE_AGENTE.lastIndex = 0
-  for (const m of t.matchAll(RE_AGENTE)) {
-    if (m[0] === 'estado' || m[0] === 'estados') continue // "estado" minúsculo costuma ser substantivo comum
-    agente = { inicio: base + m.index, fim: base + m.index + m[0].length, trecho: m[0] }
+  for (const m of t.matchAll(RE_ATRIBUICAO)) {
+    const ini = m.index + m[0].length
+    RE_AGENTE.lastIndex = 0
+    const ma = RE_AGENTE.exec(t.slice(ini))
+    if (ma && ma.index <= 4) {
+      agente = { inicio: base + ini + ma.index, fim: base + ini + ma.index + ma[0].length, trecho: ma[0] }
+      break
+    }
+  }
+  if (!agente) {
+    RE_AGENTE.lastIndex = 0
+    for (const m of t.matchAll(RE_AGENTE)) {
+      if (m[0] === 'estado' || m[0] === 'estados') continue // "estado" minúsculo costuma ser substantivo comum
+      agente = { inicio: base + m.index, fim: base + m.index + m[0].length, trecho: m[0] }
+      break
+    }
+  }
+  const relAgente = agente ? agente.fim - base : 0
+
+  // 2) finalidade: a primeira depois do agente
+  let finalidade = primeiro(RE_FINALIDADE, t.slice(relAgente), base + relAgente)
+
+  // 3) ação: verbo depois do agente e ANTES da finalidade (um verbo dentro de "a fim de… promover" é finalidade, não ação)
+  const limite = finalidade ? finalidade.inicio : base + t.length
+  RE_ACAO.lastIndex = 0
+  let acao = null
+  for (const m of t.slice(relAgente).matchAll(RE_ACAO)) {
+    const ini = base + relAgente + m.index
+    if (ini >= limite) break
+    acao = { inicio: ini, fim: ini + m[0].length, trecho: m[0] }
     break
   }
-  // a ação válida é, de preferência, o verbo que vem depois do agente (ex.: "o MEC deve AMPLIAR…")
-  const acao = (agente && primeiro(RE_ACAO, t.slice(agente.fim - base), agente.fim)) || primeiro(RE_ACAO, t, base)
+  // "cabe ao Estado, para combater X, investir em…": finalidade com "para" antes do verbo da ação
+  if (!acao && finalidade && /^para\s/i.test(finalidade.trecho)) {
+    RE_ACAO.lastIndex = 0
+    const rel = finalidade.fim - base
+    const ma = RE_ACAO.exec(t.slice(rel))
+    if (ma) {
+      acao = { inicio: base + rel + ma.index, fim: base + rel + ma.index + ma[0].length, trecho: ma[0] }
+      finalidade = primeiro(RE_FINALIDADE, t.slice(acao.fim - base), acao.fim) || finalidade
+    }
+  }
+  // ação implícita: substantivo de ação no meio/modo ("por meio de palestras e campanhas…")
+  if (!acao) {
+    RE_ACAO_NOMINAL.lastIndex = 0
+    const trechoAcao = t.slice(relAgente, limite - base)
+    const mn = RE_ACAO_NOMINAL.exec(trechoAcao)
+    if (mn && agente) acao = { inicio: base + relAgente + mn.index, fim: base + relAgente + mn.index + mn[0].length, trecho: mn[0], nominal: true }
+  }
   const modal = primeiro(RE_MODAL, t, base)
   const meio = primeiro(RE_MEIO, t, base)
-  let finalidade = primeiro(RE_FINALIDADE, t, base)
   const detalhamento = primeiro(RE_DETALHE, t, base)
   if (detalhamento) {
     const limpo = detalhamento.trecho.replace(/^,\s*/, '')
     detalhamento.inicio += detalhamento.trecho.length - limpo.length
     detalhamento.trecho = limpo
-  }
-
-  // "para + infinitivo" logo após o modal pode ser a própria ação; só vale como finalidade se vier depois da ação
-  if (finalidade && acao && finalidade.inicio < acao.inicio && /^para\s/i.test(finalidade.trecho)) {
-    const resto = t.slice(acao.fim - base)
-    const f2 = primeiro(RE_FINALIDADE, resto, acao.fim)
-    finalidade = f2
   }
 
   const elementos = {
@@ -610,6 +650,10 @@ export function avaliarC5(proposta, temaAnalise) {
     )
   } else {
     nota = Math.min(200, quantidade * 40)
+    if (elementos.acao.nominal) {
+      nota = limitar(nota, 160)
+      melhorias.push(`A ação está só implícita ("${elementos.acao.trecho}"). Deixe o verbo explícito — ex.: "deve promover palestras" — para o corretor reconhecer a ação com clareza.`)
+    }
   }
   if (nota > 0 && !relacionadaTema) {
     nota = limitar(nota, 80)

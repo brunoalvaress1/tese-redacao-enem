@@ -1,29 +1,31 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Camera, ImagePlus, X, ScanText, Sparkles, TriangleAlert, CircleCheck, RotateCcw, Lightbulb, Trash2, Cpu,
+  Camera, ImagePlus, X, ScanText, Sparkles, TriangleAlert, CircleCheck, RotateCcw, Lightbulb, Trash2, Cpu, Keyboard, Eye, LogIn,
 } from 'lucide-react'
 import { Botao, Selo, cx } from './ui.jsx'
-import { transcreverFotos, iaDisponivel, MAX_FOTOS, TAMANHO_MAX_ARQUIVO } from '../lib/ocr.js'
+import { transcreverFotos, iaDisponivel, iaAtivaNoSite, MAX_FOTOS, TAMANHO_MAX_ARQUIVO } from '../lib/ocr.js'
 import { useAuth } from '../lib/auth.jsx'
 import { contarPalavras } from '../engine/texto.js'
 
 /** Modal: foto da redação manuscrita → transcrição revisável → texto no editor. */
-export default function EnviarFoto({ aberto, onFechar, onConcluir }) {
+export default function EnviarFoto({ aberto, onFechar, onConcluir, onDigitar }) {
   const { ativo, usuario } = useAuth()
   const [fotos, setFotos] = useState([]) // { file, url }
-  const [fase, setFase] = useState('escolher') // escolher | lendo | revisar
+  const [fase, setFase] = useState('escolher') // escolher | lendo | falhou | revisar
   const [prog, setProg] = useState({ etapa: '', progresso: 0 })
   const [resultado, setResultado] = useState(null)
   const [texto, setTexto] = useState('')
   const [erro, setErro] = useState('')
   const [comIA, setComIA] = useState(false)
+  const [iaSite, setIaSite] = useState(false)
   const galeriaRef = useRef(null)
   const cameraRef = useRef(null)
 
   useEffect(() => {
     if (!aberto) return undefined
     iaDisponivel().then(setComIA)
+    iaAtivaNoSite().then(setIaSite)
     document.body.style.overflow = 'hidden'
     const esc = (e) => e.key === 'Escape' && fase !== 'lendo' && onFechar()
     window.addEventListener('keydown', esc)
@@ -61,7 +63,7 @@ export default function EnviarFoto({ aberto, onFechar, onConcluir }) {
       if (!r.texto || contarPalavras(r.texto) < 5) throw new Error('vazio')
       setResultado(r)
       setTexto(r.texto)
-      setFase('revisar')
+      setFase(r.qualidade && !r.qualidade.ok ? 'falhou' : 'revisar')
     } catch (e) {
       console.error(e)
       setErro(e.message === 'vazio'
@@ -133,7 +135,8 @@ export default function EnviarFoto({ aberto, onFechar, onConcluir }) {
                   {comIA
                     ? 'Alta precisão, inclusive para letra cursiva.'
                     : 'Gratuita e feita no seu aparelho. Funciona melhor com letra de forma legível.'}
-                  {!comIA && ativo && !usuario && <> <Link to="/entrar" className="font-semibold underline" onClick={onFechar}>Entre na sua conta</Link> para usar a leitura com IA, mais precisa para letra cursiva.</>}
+                  {!comIA && iaSite && ativo && !usuario && <> <Link to="/entrar" className="font-semibold underline" onClick={onFechar}>Entre na sua conta (grátis)</Link> para usar a leitura com IA, que entende letra de mão.</>}
+                  {!comIA && !iaSite && <> Letra de mão costuma não ser reconhecida por esse leitor; se falhar, você pode digitar o texto.</>}
                 </p>
               </div>
             </div>
@@ -150,6 +153,32 @@ export default function EnviarFoto({ aberto, onFechar, onConcluir }) {
 
             {erro && <p className="flex items-start gap-2 rounded-xl bg-rose-50 p-3 text-sm text-rose-700"><TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" /> {erro}</p>}
             <Botao className="w-full" tamanho="lg" icone={ScanText} onClick={ler} disabled={!fotos.length}>Ler redação</Botao>
+          </div>
+        )}
+
+        {fase === 'falhou' && resultado && (
+          <div className="space-y-4 overflow-y-auto p-5 animate-surgir">
+            <div className="flex flex-col items-center text-center">
+              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-amber-600"><TriangleAlert className="h-7 w-7" /></div>
+              <h3 className="mt-3 text-lg font-bold text-slate-900">Não conseguimos ler sua letra</h3>
+              <p className="mt-1 text-sm text-slate-600">
+                O leitor gratuito do navegador foi feito para texto impresso e não reconhece bem letra de mão
+                {resultado.confianca != null && <> (confiança de {resultado.confianca}%)</>}.
+              </p>
+            </div>
+            {resultado.aviso && <p className="rounded-xl bg-slate-50 p-3 text-xs text-slate-500">{resultado.aviso}</p>}
+            <div className="space-y-2">
+              {iaSite && !usuario && ativo && (
+                <Botao to="/entrar" className="w-full" icone={LogIn} onClick={onFechar}>Entrar e ler com IA (entende letra de mão)</Botao>
+              )}
+              <Botao className="w-full" variante={iaSite && !usuario ? 'secundario' : 'primario'} icone={Keyboard} onClick={() => { onFechar(); onDigitar?.() }}>Digitar a redação</Botao>
+              <Botao className="w-full" variante="secundario" icone={RotateCcw} onClick={reiniciar}>Tentar outra foto</Botao>
+              <button onClick={() => setFase('revisar')} className="flex w-full items-center justify-center gap-1.5 py-2 text-xs font-medium text-slate-500 hover:text-slate-700"><Eye className="h-3.5 w-3.5" /> Ver o que foi lido mesmo assim</button>
+            </div>
+            <ul className="list-disc space-y-1 rounded-xl border border-slate-200 p-3 pl-7 text-xs leading-relaxed text-slate-600">
+              <li>Envie a <b>foto original</b> da câmera, não um print de tela (o print reduz muito a resolução).</li>
+              <li>Fotografe só a folha, de cima e reta, com boa luz e sem sombras.</li>
+            </ul>
           </div>
         )}
 

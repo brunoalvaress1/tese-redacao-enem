@@ -41,7 +41,7 @@ A correção roda inteira no navegador, por um motor que aplica os critérios da
 | 📚 | **Mais de 100 temas** | Todos os temas oficiais do ENEM de 1998 a 2025 e dezenas de inéditos por assunto |
 | 🧭 | **Redação guiada** | Escreva parágrafo por parágrafo, com checklist em tempo real |
 | 📈 | **Desempenho e perfil** | Histórico, gráficos por competência, meta de nota, conquistas e sequência de dias |
-| 🤖 | **Segunda opinião com IA** *(opcional)* | O Claude corrige como um corretor humano e as duas notas aparecem lado a lado |
+| 🤖 | **Leitura de letra à mão e segunda opinião com IA** *(opcional)* | O Claude corrige como um corretor humano e as duas notas aparecem lado a lado |
 | 🎓 | **Curso gratuito** | 9 aulas: estrutura, competências, repertório, mais de 150 conectivos e redação modelo comentada |
 
 ### 📱 Feito para o celular
@@ -135,23 +135,27 @@ Com o Supabase, cada aluno cria a própria conta e vê só as próprias redaçõ
 
 ## 🤖 Recursos com IA (opcional)
 
-Duas Edge Functions usam o Claude da Anthropic. Elas só atendem alunos logados e cada aluno tem um limite diário:
+Dois recursos usam o Claude, da Anthropic. Eles rodam como **funções da Vercel** na pasta [`api/`](api/), com o código compartilhado em [`server/ia.js`](server/ia.js):
 
-| Função | Para que serve |
+| Rota | Para que serve |
 |---|---|
-| [`transcrever-redacao`](supabase/functions/transcrever-redacao/index.ts) | Lê a foto da redação, inclusive letra cursiva |
-| [`corrigir-redacao-ia`](supabase/functions/corrigir-redacao-ia/index.ts) | Faz a "segunda opinião": notas, comentários e desvios em formato estruturado |
+| `POST /api/transcrever-redacao` | Lê a **foto da redação escrita à mão**. O leitor gratuito do navegador (Tesseract) só funciona bem com texto impresso. |
+| `POST /api/corrigir-redacao-ia` | Faz a "segunda opinião": notas, comentários e desvios em formato estruturado |
+| `GET /api/status-ia` | Informa ao site se a IA está ativa |
 
-```bash
-supabase login
-supabase link --project-ref SEU_PROJECT_REF
-supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
-supabase secrets set TRANSCRICOES_POR_DIA=20 CORRECOES_IA_POR_DIA=10   # opcional
-supabase functions deploy transcrever-redacao
-supabase functions deploy corrigir-redacao-ia
-```
+**Para ativar:** crie uma chave em [console.anthropic.com](https://console.anthropic.com) e adicione em **Vercel → Settings → Environment Variables**:
 
-Sem essas funções, o site continua 100% funcional: a foto é lida no navegador e a correção é a automática.
+| Variável | Valor |
+|---|---|
+| `ANTHROPIC_API_KEY` | `sk-ant-...` (marque como *Sensitive*) |
+| `TRANSCRICOES_POR_DIA` | opcional, padrão `20` |
+| `CORRECOES_IA_POR_DIA` | opcional, padrão `10` |
+
+Depois, faça um **Redeploy**. As rotas só atendem alunos logados e respeitam um limite diário por aluno, controlado pela tabela `transcricoes` do Supabase. Cada leitura custa alguns centavos de dólar.
+
+Sem a chave, o site continua 100% funcional. Se o leitor do navegador não entender a letra, ele avisa e sugere digitar o texto.
+
+> Alternativa para quem não hospeda na Vercel: as mesmas funções existem como Supabase Edge Functions em [`supabase/functions/`](supabase/functions/).
 
 ## ⏰ Robô que mantém o Supabase ativo
 

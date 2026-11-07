@@ -197,3 +197,30 @@ describe('foto e temas', async () => {
     expect(['pleno', 'parcial', 'tangencia']).toContain(r.analise.tema.status)
   })
 })
+
+describe('ajustes a partir de redação real (nota humana 880)', async () => {
+  const { avaliarLeitura } = await import('../../lib/ocr.js')
+  it('detecta concordância "Ministério Pública" e "o vício dessas plataformas têm"', () => {
+    const regras = verificarLocal('Cabe ao poder público, na figura do Ministério Pública, agir. Desse modo, o vício dessas plataformas têm se tornado frequente.').map((m) => m.regra)
+    expect(regras).toContain('concordancia-publico')
+    expect(regras).toContain('sujeito-singular-tem')
+    expect(verificarLocal('A maioria das pessoas têm acesso.').map((m) => m.regra)).not.toContain('sujeito-singular-tem')
+  })
+  it('C5: verbo dentro da finalidade não conta como ação; ação implícita limita a 160', async () => {
+    const texto = A.FORTE_2023.split('\n').slice(0, 3).join('\n') + '\nPortanto, é necessária a ação conjunta do Estado e da sociedade para mitigá-los. Nesse âmbito, cabe ao poder público, em parceria com a Mídia, por intermédio de palestras no ambiente escolar e campanhas nas redes sociais, a fim de preservar a saúde dos jovens e promover o uso responsável das plataformas.'
+    const r = await corrigirRedacao({ texto, tema: null, usarLanguageTool: false })
+    expect(r.analise.proposta.elementos.agente).toBe('poder público')
+    expect(r.analise.proposta.elementos.acao).toBe('palestras')
+    expect(r.notas.c5).toBe(160)
+  })
+  it('C5: finalidade com "para" antes do verbo da ação', async () => {
+    const texto = A.FORTE_2023.split('\n').slice(0, 3).join('\n') + '\nPortanto, cabe ao Ministério da Educação, para combater a desigualdade, investir em creches públicas, por meio de verbas federais, como forma de apoio às cuidadoras.'
+    const r = await corrigirRedacao({ texto, tema: buscarTema('enem-2023'), usarLanguageTool: false })
+    expect(r.analise.proposta.elementos.acao).toBe('investir')
+  })
+  it('detector de leitura ruim: lixo de OCR x texto real', () => {
+    const lixo = 'Sr o faso? adontdoo: NT AA o AbSbaSTA Et OI Ao E à SS oco oe gecatot oo AMET Á, É s ecos decerto LON ANA ANA ut ullio SCORES CSASSAAADAAA SISTER Y ME ES a P SS Pd faca enem PR VFV TEMA tes Us sampa dor seda seco'
+    expect(avaliarLeitura(lixo, 37).ok).toBe(false)
+    expect(avaliarLeitura(A.FORTE_2023, 92).ok).toBe(true)
+  })
+})

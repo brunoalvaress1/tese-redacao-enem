@@ -271,7 +271,8 @@ export default function Escrever() {
         </div>
       </div>
       <SeletorTema aberto={seletor} onFechar={() => setSeletor(false)} onEscolher={setTema} />
-      <EnviarFoto aberto={fotoAberta} onFechar={() => setFotoAberta(false)} onConcluir={(t) => { setTexto(t); setOrigem('foto') }} />
+      <EnviarFoto aberto={fotoAberta} onFechar={() => setFotoAberta(false)} onConcluir={(t) => { setTexto(t); setOrigem('foto') }}
+        onDigitar={() => setTimeout(() => document.querySelector('textarea[aria-label="Texto da redação"]')?.focus(), 100)} />
 
       {corrigindo && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-white/80 p-4 backdrop-blur-sm" role="status" aria-live="polite">

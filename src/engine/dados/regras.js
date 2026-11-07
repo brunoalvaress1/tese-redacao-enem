@@ -121,6 +121,10 @@ export const REGRAS = [
   r('mais-adversativo', '(?<=,\\s*)mais(?=\\s+(?:não|nem|também|sim|ainda|isso|é|há|o|a|os|as|ele|ela|eles|elas|essa|esse|se|quando|existe|existem|infelizmente|na\\s+prática|ao)\\s)',
     'Aqui a ideia é de oposição: use a conjunção "mas" (e não "mais", que indica intensidade/quantidade).', (m) => m.replace(/mais/i, 'mas'), 'ortografia', 1, 'giu'),
   // (exceção da regra acima: correlação "quanto mais…, mais…" é correta)
+  r('concordancia-publico', '(?:ministério|poder|órgão|governo|setor|serviço|ensino|espaço|transporte|interesse|patrimônio|investimento)\\s+pública',
+    'Concordância nominal: o substantivo é masculino, então o adjetivo também vai para o masculino ("público").', (m) => m.replace(/pública$/i, (x) => (x[0] === 'P' ? 'Público' : 'público')), 'concordância'),
+  r('sujeito-singular-tem', '(?:o|a|esse|essa|este|esta|tal)\\s+(?!maioria|parte|metade|minoria|maior|grande|totalidade)\\p{L}{3,}\\s+(?:d[oa]s?|dess[ae]s|dest[ae]s|daquel[ae]s)\\s+\\p{L}+(?:\\s+\\p{L}+)?\\s+têm',
+    'Concordância verbal: o núcleo do sujeito está no singular, então o verbo também fica no singular ("tem").', (m) => m.replace(/têm$/i, 'tem'), 'concordância'),
   r('pais-acento', '(?:nosso|do|no|pelo|o|seu|esse|este|ao|todo\\s+o|um)\\s+pais(?![\\p{L}])',
     'Falta acento: "país" (nação). Sem acento, "pais" é o plural de "pai".', (m) => m.replace(/pais$/i, 'país'), 'acentuação'),
   r('mas-intensidade', '(?:cada\\s+vez|muito|bem|ainda|nunca|cada\\s+dia)\\s+mas(?![\\p{L}])',
