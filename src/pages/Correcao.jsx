@@ -195,19 +195,19 @@ export default function Correcao() {
   return (
     <Container className="py-6 sm:py-10">
       {/* CABEÇALHO */}
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3 sm:mb-6 sm:gap-4">
         <div className="min-w-0">
           <p className="flex items-center gap-2 text-sm text-slate-500">
             <Calendar className="h-4 w-4" /> {formatarData(r.criadoEm)}
             {usuario && <span className="flex items-center gap-1 text-emerald-600"><Cloud className="h-4 w-4" /> salva na nuvem</span>}
             {r.origem === 'foto' && <span className="flex items-center gap-1 text-tinta-600"><Camera className="h-4 w-4" /> transcrita de foto</span>}
           </p>
-          <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl">{r.tema?.titulo || 'Redação sem tema definido'}</h1>
+          <h1 className="mt-1 text-lg font-bold leading-snug tracking-tight text-slate-900 sm:text-3xl sm:leading-tight">{r.tema?.titulo || 'Redação sem tema definido'}</h1>
         </div>
-        <div className="flex flex-wrap gap-2 print:hidden">
-          <Botao variante="secundario" tamanho="sm" icone={RotateCcw} onClick={reescrever}>Reescrever</Botao>
-          <Botao variante="secundario" tamanho="sm" icone={Printer} onClick={() => window.print()}>Imprimir / PDF</Botao>
-          <Botao tamanho="sm" icone={PenLine} to="/escrever" onClick={() => salvarRascunho({ texto: '', temaId: null })}>Nova redação</Botao>
+        <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto print:hidden">
+          <Botao variante="secundario" tamanho="sm" icone={RotateCcw} onClick={reescrever} className="px-2">Reescrever</Botao>
+          <Botao variante="secundario" tamanho="sm" icone={Printer} onClick={() => window.print()} className="px-2"><span className="sm:hidden">PDF</span><span className="hidden sm:inline">Imprimir / PDF</span></Botao>
+          <Botao tamanho="sm" icone={PenLine} className="px-2" to="/escrever" onClick={() => salvarRascunho({ texto: '', temaId: null })}>Nova<span className="hidden sm:inline">&nbsp;redação</span></Botao>
         </div>
       </div>
 
@@ -224,8 +224,8 @@ export default function Correcao() {
 
       {/* RESUMO */}
       <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
-        <Cartao className="flex flex-col items-center justify-center p-6 text-center">
-          <NotaGauge total={r.total} tamanho={190} />
+        <Cartao className="flex flex-col items-center justify-center p-4 text-center sm:p-6">
+          <NotaGauge total={r.total} tamanho={170} />
           <div className="mt-2 grid w-full grid-cols-3 gap-2 text-center">
             {[['Palavras', r.analise.estatisticas.palavras], ['Linhas', `≈${r.analise.estatisticas.linhas}`], ['Desvios', desvios.length]].map(([a, b]) => (
               <div key={a} className="rounded-xl bg-slate-50 py-2"><p className="font-bold tabular-nums text-slate-900">{b}</p><p className="text-[11px] text-slate-500">{a}</p></div>

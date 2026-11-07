@@ -5,14 +5,14 @@ import { AULAS, MODULOS } from '../data/aulas.js'
 
 export default function Aprenda() {
   return (
-    <Container className="py-10">
+    <Container className="py-5 sm:py-10">
       <Titulo sobretitulo="Curso gratuito" titulo="Redação nota 1000, do zero"
         descricao="Aulas curtas e diretas sobre estrutura, as 5 competências, repertório, conectivos e proposta de intervenção — com uma redação modelo comentada." />
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+      <div className="mt-5 grid grid-cols-3 gap-2 sm:mt-8 sm:gap-4">
         {[[BookOpen, `${AULAS.length} aulas`, 'Conteúdo completo e gratuito'], [Clock, `${AULAS.reduce((s, a) => s + parseInt(a.duracao, 10), 0)} minutos`, 'Para estudar no seu ritmo'], [PenLine, 'Prática integrada', 'Corrija sua redação a cada aula']].map(([I, t, d]) => (
-          <Cartao key={t} className="flex items-center gap-4 p-5">
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-tinta-50 text-tinta-600"><I className="h-5 w-5" /></div>
-            <div><p className="font-bold text-slate-900">{t}</p><p className="text-sm text-slate-500">{d}</p></div>
+          <Cartao key={t} className="flex flex-col items-center gap-2 p-3 text-center sm:flex-row sm:gap-4 sm:p-5 sm:text-left">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-tinta-50 text-tinta-600 sm:h-11 sm:w-11"><I className="h-5 w-5" /></div>
+            <div><p className="text-xs font-bold text-slate-900 sm:text-base">{t}</p><p className="hidden text-sm text-slate-500 sm:block">{d}</p></div>
           </Cartao>
         ))}
       </div>

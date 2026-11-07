@@ -53,7 +53,7 @@ export default function TemaSheet({ tema, onFechar }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 backdrop-blur-sm sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label={tema.titulo}
       onMouseDown={(e) => e.target === e.currentTarget && onFechar()}>
-      <div className="flex max-h-[88vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl animate-subir">
+      <div className="flex max-h-tela-88 w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl animate-subir">
         <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-slate-200 sm:hidden" />
         <div className="flex items-start gap-3 px-5 pb-3 pt-4">
           <div className={cx('grid h-11 w-11 shrink-0 place-items-center rounded-xl', ex.cor)}><Icone className="h-5 w-5" /></div>

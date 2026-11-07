@@ -33,10 +33,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { texto, provedor } = await transcreverImagens(imagens)
+    const { texto, tema, provedor } = await transcreverImagens(imagens)
     if (!texto) return responder(res, 422, { erro: 'Nenhum texto foi encontrado na foto.' })
     await registrarUso(sessao.supabase, sessao.user, 'foto')
-    return responder(res, 200, { texto, provedor })
+    return responder(res, 200, { texto, tema, provedor })
   } catch (error) {
     return erroIA(res, error)
   }

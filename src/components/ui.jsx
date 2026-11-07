@@ -58,11 +58,11 @@ export function Container({ className, children }) {
 
 export function Titulo({ sobretitulo, titulo, descricao, centro, className, acao }) {
   return (
-    <div className={cx(centro ? 'text-center mx-auto max-w-2xl' : 'flex flex-wrap items-end justify-between gap-4', className)}>
+    <div className={cx(centro ? 'text-center mx-auto max-w-2xl' : 'flex flex-wrap items-end justify-between gap-3 sm:gap-4', className)}>
       <div className={centro ? '' : 'max-w-2xl'}>
-        {sobretitulo && <p className="text-sm font-semibold uppercase tracking-wider text-tinta-600">{sobretitulo}</p>}
-        <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{titulo}</h1>
-        {descricao && <p className="mt-2 text-slate-600">{descricao}</p>}
+        {sobretitulo && <p className="text-xs font-semibold uppercase tracking-wider text-tinta-600 sm:text-sm">{sobretitulo}</p>}
+        <h1 className="mt-0.5 text-xl font-bold tracking-tight text-slate-900 sm:mt-1 sm:text-3xl">{titulo}</h1>
+        {descricao && <p className="mt-1 text-sm text-slate-600 sm:mt-2 sm:text-base">{descricao}</p>}
       </div>
       {acao}
     </div>

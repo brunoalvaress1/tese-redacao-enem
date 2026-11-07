@@ -179,7 +179,7 @@ async function transcreverComIA(arquivos, aoProgredir) {
   const data = await chamarIA('transcrever-redacao', { imagens })
   if (!data?.texto) throw new Error('A IA não encontrou texto na foto.')
   aoProgredir?.({ etapa: 'Concluído', progresso: 1 })
-  return { texto: limparTranscricao(data.texto), fonte: 'ia', confianca: null, qualidade: { ok: true, nota: 1 } }
+  return { texto: limparTranscricao(data.texto), tema: String(data.tema || '').trim(), fonte: 'ia', confianca: null, qualidade: { ok: true, nota: 1 } }
 }
 
 async function transcreverComTesseract(arquivos, aoProgredir) {

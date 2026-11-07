@@ -1,7 +1,7 @@
 // Aderência ao tema: identifica abordagem plena, parcial, tangenciamento e fuga ao tema.
 import { normalizar, palavras, paragrafos, STOPWORDS } from './texto.js'
 
-const GENERICAS = new Set(
+export const GENERICAS = new Set(
   (
     'desafios desafio caminhos caminho combater combate enfrentamento enfrentar brasil brasileira brasileiro ' +
     'brasileiros brasileiras sociedade social sociais questao perspectivas perspectiva acerca importancia ' +

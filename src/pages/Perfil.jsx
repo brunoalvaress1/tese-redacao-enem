@@ -166,7 +166,7 @@ export default function Perfil() {
   const feitas = resumo.conquistas.filter((x) => x.ok).length
 
   return (
-    <Container className="max-w-3xl py-6 sm:py-10">
+    <Container className="max-w-3xl py-4 sm:py-10">
       {/* CABEÇALHO */}
       <Cartao className="p-5">
         <div className="flex items-center gap-4">

@@ -13,9 +13,9 @@ const AULA = { c1: 'norma-padrao', c2: 'repertorio', c3: 'argumentacao', c4: 'co
 
 function Tile({ icone: Icone, rotulo, valor, detalhe }) {
   return (
-    <Cartao className="p-5">
-      <div className="flex items-center gap-2 text-sm font-medium text-slate-500"><Icone className="h-4 w-4" /> {rotulo}</div>
-      <p className="mt-2 text-3xl font-extrabold tabular-nums tracking-tight text-slate-900">{valor}</p>
+    <Cartao className="p-4 sm:p-5">
+      <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 sm:gap-2 sm:text-sm"><Icone className="h-4 w-4 shrink-0" /> {rotulo}</div>
+      <p className="mt-1.5 text-2xl font-extrabold tabular-nums tracking-tight text-slate-900 sm:mt-2 sm:text-3xl">{valor}</p>
       {detalhe && <p className="mt-1 text-xs text-slate-500">{detalhe}</p>}
     </Cartao>
   )
@@ -96,7 +96,7 @@ export default function Desempenho() {
   if (lista === null) return <Carregando texto="Carregando seu desempenho…" />
 
   return (
-    <Container className="py-10">
+    <Container className="py-5 sm:py-10">
       <Titulo sobretitulo="Desempenho" titulo={usuario ? `Olá, ${(usuario.user_metadata?.nome || usuario.email).split(' ')[0]}! Esta é sua evolução` : 'Sua evolução na redação'}
         descricao={usuario ? `Histórico da conta ${usuario.email}, disponível em qualquer dispositivo.` : 'Histórico salvo neste navegador.' }
         acao={<Botao to="/escrever" icone={PenLine}>Nova redação</Botao>} />
@@ -113,7 +113,7 @@ export default function Desempenho() {
         </div>
       ) : (
         <>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-4">
             <Tile icone={FileText} rotulo="Redações corrigidas" valor={lista.length} />
             <Tile icone={Target} rotulo="Média geral" valor={dados.media} detalhe={corNota(dados.media).rotulo} />
             <Tile icone={Trophy} rotulo="Melhor nota" valor={dados.melhor} />

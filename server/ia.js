@@ -91,13 +91,36 @@ export async function lerCorpo(req) {
 // ================================================================== instruções
 export const INSTRUCOES_TRANSCRICAO = `Você vai transcrever uma redação do ENEM escrita à mão. As imagens são as páginas, na ordem.
 
-Regras:
+Responda somente com um objeto JSON neste formato: {"tema": "...", "texto": "..."}
+
+"tema":
+- O tema escrito à mão pelo estudante no campo TEMA da folha, copiado exatamente como está (sem corrigir).
+- Se não houver campo TEMA preenchido, use o título da redação, se houver.
+- Se não houver nenhum dos dois, use "".
+
+"texto" (a redação):
 - Transcreva exatamente o que o estudante escreveu. Não corrija ortografia, acentuação, gramática nem pontuação: os erros fazem parte da avaliação e precisam aparecer como estão.
-- Transcreva apenas o texto da redação (as linhas numeradas). Ignore números de linha, cabeçalhos impressos da folha, campos de tema, nome e data, o título (se houver), a área "reservado ao corretor", notas escritas por corretores e palavras riscadas.
+- Transcreva apenas o texto da redação (as linhas numeradas). Não inclua o tema, o título, números de linha, cabeçalhos impressos da folha, campos de nome e data, a área "reservado ao corretor", notas escritas por corretores nem palavras riscadas.
 - Quando uma palavra for dividida no fim da linha com hífen, junte as duas partes numa palavra só.
-- Separe cada parágrafo com uma linha em branco. Junte as linhas de um mesmo parágrafo em uma só.
-- Se uma palavra estiver ilegível, escreva [ilegível] no lugar dela.
-- Responda somente com o texto transcrito, sem comentários antes ou depois.`
+- Separe cada parágrafo com uma linha em branco (\\n\\n). Junte as linhas de um mesmo parágrafo em uma só.
+- Se uma palavra estiver ilegível, escreva [ilegível] no lugar dela.`
+
+/** Lê a resposta da transcrição ({tema, texto}); se a IA não devolver JSON, usa tudo como texto. */
+export function lerTranscricao(bruto) {
+  const limpo = String(bruto || '').replace(/^\s*```(?:json)?\s*|\s*```\s*$/g, '').trim()
+  try {
+    const r = JSON.parse(limpo.slice(limpo.indexOf('{'), limpo.lastIndexOf('}') + 1))
+    if (typeof r?.texto === 'string') return { tema: String(r.tema || '').trim().replace(/\s+/g, ' ').slice(0, 300), texto: r.texto.trim() }
+  } catch { /* não era JSON */ }
+  return { tema: '', texto: limpo }
+}
+
+const ESQUEMA_TRANSCRICAO = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['tema', 'texto'],
+  properties: { tema: { type: 'string' }, texto: { type: 'string' } },
+}
 
 export const NIVEIS = [0, 40, 80, 120, 160, 200]
 
@@ -245,13 +268,13 @@ const textoClaude = (resposta) => resposta.content.filter((b) => b.type === 'tex
 export async function transcreverImagens(imagens) {
   if (provedorIA() === 'gemini') {
     const partes = [...imagens.map((i) => ({ inlineData: { mimeType: i.media_type, data: i.data } })), { text: INSTRUCOES_TRANSCRICAO }]
-    const { texto, modelo } = await chamarGemini({ partes })
-    return { texto, provedor: 'gemini', modelo }
+    const { texto: bruto, modelo } = await chamarGemini({ partes, json: true })
+    return { ...lerTranscricao(bruto), provedor: 'gemini', modelo }
   }
   const resposta = await claude().beta.messages.create({
     model: MODELO_CLAUDE,
     max_tokens: 16000,
-    output_config: { effort: 'medium' },
+    output_config: { effort: 'medium', format: { type: 'json_schema', schema: ESQUEMA_TRANSCRICAO } },
     // Se o modelo recusar por engano, o próprio servidor tenta de novo num modelo de reserva.
     betas: ['server-side-fallback-2026-07-01'],
     fallbacks: 'default',
@@ -264,7 +287,7 @@ export async function transcreverImagens(imagens) {
     }],
   })
   if (resposta.stop_reason === 'refusal') throw new ErroIA(422, 'Não foi possível ler esta foto. Tente outra.')
-  return { texto: textoClaude(resposta), provedor: 'claude', modelo: MODELO_CLAUDE }
+  return { ...lerTranscricao(textoClaude(resposta)), provedor: 'claude', modelo: MODELO_CLAUDE }
 }
 
 /** Corrige a redação como um corretor do ENEM e devolve o resultado normalizado. */

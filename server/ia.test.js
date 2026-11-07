@@ -97,3 +97,14 @@ describe('normalizarCorrecao', () => {
     expect(() => normalizarCorrecao('{"resumo":"x"}')).toThrow()
   })
 })
+
+describe('leitura do tema na foto', async () => {
+  const { lerTranscricao } = await import('./ia.js')
+  it('separa tema e texto quando a IA devolve JSON (com ou sem cercas)', () => {
+    expect(lerTranscricao('```json\n{"tema":"Os impactos das redes sociais","texto":"A Constituição..."}\n```'))
+      .toEqual({ tema: 'Os impactos das redes sociais', texto: 'A Constituição...' })
+  })
+  it('se a IA não devolver JSON, usa tudo como texto e deixa o tema vazio', () => {
+    expect(lerTranscricao('A Constituição Federal de 1988...')).toEqual({ tema: '', texto: 'A Constituição Federal de 1988...' })
+  })
+})

@@ -7,3 +7,11 @@
   body { @apply bg-slate-50 text-slate-800; }
   ::selection { @apply bg-tinta-100 text-tinta-900; }
 }
+
+/* Altura real visível no celular (dvh desconta a barra do navegador; vh fica como reserva) */
+@layer utilities {
+  .max-h-tela-92 { max-height: 92vh; max-height: 92dvh; }
+  .max-h-tela-90 { max-height: 90vh; max-height: 90dvh; }
+  .max-h-tela-88 { max-height: 88vh; max-height: 88dvh; }
+  .min-h-tela { min-height: 100vh; min-height: 100dvh; }
+}

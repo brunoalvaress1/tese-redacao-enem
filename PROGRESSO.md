@@ -179,3 +179,13 @@ Limitações conhecidas (honestas):
   `gemini-flash-latest`). Troca automática entre modelos quando a cota grátis de um esgota (429) ou ele não existe (404).
 - Resposta da correção validada e normalizada no servidor (notas sempre múltiplos de 40, JSON com ou sem cercas de código).
 - 7 testes novos com respostas simuladas do Gemini → **49/49**.
+
+### Passo 9 — Tema da foto + celular mais compacto (2026-11-07)
+- **Tema da foto**: a IA agora devolve `{ tema, texto }` — lê o tema escrito no campo TEMA da folha (ou o título).
+  Na conferência, aparece "Tema lido da foto" (editável) + temas parecidos do site; sem tema na foto, o site sugere
+  os temas que combinam com o texto (ranking TF-IDF + confirmação pelo analisador de aderência).
+  Validado: redação real → "Saúde mental dos jovens na era digital"; nota 1000 → tema ENEM 2023; cinema → ENEM 2019.
+- **Celular**: modais com altura real da tela (`dvh`, o X não some atrás da barra do navegador), sem teclado abrindo
+  sozinho no seletor de tema, cabeçalhos/espaçamentos menores, botões em linha, números em 2 colunas.
+  Auditoria automática em 360×640: 13 telas + 5 modais sem rolagem lateral, com X visível e modais cabendo na tela.
+- Testes: **53/53**.

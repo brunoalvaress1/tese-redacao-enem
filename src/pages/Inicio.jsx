@@ -77,7 +77,7 @@ export default function Inicio() {
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_70%_0%,rgba(55,104,246,.12),transparent),radial-gradient(40%_40%_at_0%_100%,rgba(251,191,36,.10),transparent)]" />
-        <Container className="grid items-center gap-12 py-14 lg:grid-cols-[1.05fr_1fr] lg:py-20">
+        <Container className="grid items-center gap-10 py-8 sm:py-14 lg:grid-cols-[1.05fr_1fr] lg:gap-12 lg:py-20">
           <div className="animate-surgir">
             {diasParaProva() !== null && (
               <Link to="/temas?aba=apostas" className="mb-3 inline-flex items-center gap-2 rounded-full bg-amber-400 px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm transition hover:bg-amber-300">

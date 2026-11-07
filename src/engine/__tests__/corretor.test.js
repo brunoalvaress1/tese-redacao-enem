@@ -224,3 +224,16 @@ describe('ajustes a partir de redação real (nota humana 880)', async () => {
     expect(avaliarLeitura(A.FORTE_2023, 92).ok).toBe(true)
   })
 })
+
+describe('sugestão de temas para a foto', async () => {
+  const { sugerirTemas } = await import('../sugestoes.js')
+  it('tema oficial escrito igual é reconhecido em 1º lugar', () => {
+    const s = sugerirTemas({ temaLido: 'Desafios para a valorização da herança africana no Brasil' })
+    expect(s[0].tema.id).toBe('enem-2024')
+    expect(s[0].pontos).toBeGreaterThanOrEqual(1.75)
+  })
+  it('sem tema na foto, sugere pelo conteúdo do texto', () => {
+    const s = sugerirTemas({ texto: A.FORTE_2023 })
+    expect(s.map((x) => x.tema.id)).toContain('enem-2023')
+  })
+})

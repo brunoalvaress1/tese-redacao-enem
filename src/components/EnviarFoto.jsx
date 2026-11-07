@@ -7,9 +7,10 @@ import { Botao, Selo, cx } from './ui.jsx'
 import { transcreverFotos, iaDisponivel, iaAtivaNoSite, MAX_FOTOS, TAMANHO_MAX_ARQUIVO } from '../lib/ocr.js'
 import { useAuth } from '../lib/auth.jsx'
 import { contarPalavras } from '../engine/texto.js'
+import { sugerirTemas } from '../engine/sugestoes.js'
 
 /** Modal: foto da redação manuscrita → transcrição revisável → texto no editor. */
-export default function EnviarFoto({ aberto, onFechar, onConcluir, onDigitar }) {
+export default function EnviarFoto({ aberto, onFechar, onConcluir, onDigitar, temaAtual }) {
   const { ativo, usuario } = useAuth()
   const [fotos, setFotos] = useState([]) // { file, url }
   const [fase, setFase] = useState('escolher') // escolher | lendo | falhou | revisar
@@ -19,6 +20,9 @@ export default function EnviarFoto({ aberto, onFechar, onConcluir, onDigitar }) 
   const [erro, setErro] = useState('')
   const [comIA, setComIA] = useState(false)
   const [iaSite, setIaSite] = useState(false)
+  const [temaFoto, setTemaFoto] = useState('')
+  const [escolhaTema, setEscolhaTema] = useState('atual')
+  const [sugestoes, setSugestoes] = useState([])
   const galeriaRef = useRef(null)
   const cameraRef = useRef(null)
 
@@ -63,6 +67,13 @@ export default function EnviarFoto({ aberto, onFechar, onConcluir, onDigitar }) 
       if (!r.texto || contarPalavras(r.texto) < 5) throw new Error('vazio')
       setResultado(r)
       setTexto(r.texto)
+      // tema: o escrito na foto (se houver) + temas parecidos do banco
+      const lido = (r.tema || '').trim()
+      const sug = r.qualidade && !r.qualidade.ok ? [] : sugerirTemas({ temaLido: lido, texto: r.texto })
+      setTemaFoto(lido)
+      setSugestoes(sug)
+      const quaseIgual = sug[0]?.motivo === 'titulo' && sug[0].pontos >= 1.75
+      setEscolhaTema(lido ? (quaseIgual ? `site:${sug[0].tema.id}` : 'foto') : temaAtual ? 'atual' : '')
       setFase(r.qualidade && !r.qualidade.ok ? 'falhou' : 'revisar')
     } catch (e) {
       console.error(e)
@@ -78,8 +89,13 @@ export default function EnviarFoto({ aberto, onFechar, onConcluir, onDigitar }) 
     setResultado(null)
     setTexto('')
   }
+  const temaEscolhido = () => {
+    if (escolhaTema === 'foto' && temaFoto.trim().length > 3) return { id: null, titulo: temaFoto.trim(), livre: true }
+    if (escolhaTema.startsWith('site:')) return sugestoes.find((x) => `site:${x.tema.id}` === escolhaTema)?.tema
+    return undefined // mantém o tema atual
+  }
   const concluir = () => {
-    onConcluir(texto.trim())
+    onConcluir(texto.trim(), temaEscolhido())
     onFechar()
     reiniciar()
     setFotos([])
@@ -88,26 +104,26 @@ export default function EnviarFoto({ aberto, onFechar, onConcluir, onDigitar }) 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 backdrop-blur-sm sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label="Enviar foto da redação"
       onMouseDown={(e) => e.target === e.currentTarget && fase !== 'lendo' && onFechar()}>
-      <div className={cx('flex max-h-[94vh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl animate-surgir', fase === 'revisar' ? 'max-w-5xl' : 'max-w-xl')}>
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-          <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900"><ScanText className="h-5 w-5 text-tinta-600" /> {fase === 'revisar' ? 'Confira a transcrição' : 'Foto da redação'}</h2>
+      <div className={cx('flex max-h-tela-92 w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl animate-surgir', fase === 'revisar' ? 'max-w-5xl' : 'max-w-xl')}>
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5 sm:py-4">
+          <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 sm:text-lg"><ScanText className="h-5 w-5 text-tinta-600" /> {fase === 'revisar' ? 'Confira a transcrição' : 'Foto da redação'}</h2>
           {fase !== 'lendo' && <button onClick={onFechar} className="grid h-9 w-9 place-items-center rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Fechar"><X className="h-5 w-5" /></button>}
         </div>
 
         {fase === 'escolher' && (
-          <div className="space-y-4 overflow-y-auto p-5">
+          <div className="space-y-3 overflow-y-auto p-4 sm:space-y-4 sm:p-5">
             <p className="text-sm text-slate-600">Tire uma foto da sua redação escrita à mão. Nós transcrevemos o texto e você confere antes de corrigir — sem precisar digitar.</p>
             <input ref={galeriaRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => { adicionar(e.target.files); e.target.value = '' }} />
             <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { adicionar(e.target.files); e.target.value = '' }} />
 
             {fotos.length === 0 ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <button onClick={() => cameraRef.current?.click()} className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-tinta-200 bg-tinta-50/50 px-4 py-8 text-tinta-700 transition hover:border-tinta-400 hover:bg-tinta-50">
-                  <Camera className="h-8 w-8" /><span className="font-semibold">Tirar foto</span><span className="text-xs text-tinta-600/80">Abre a câmera no celular</span>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => cameraRef.current?.click()} className="flex flex-col items-center gap-1.5 rounded-2xl border-2 border-dashed border-tinta-200 bg-tinta-50/50 px-2 py-5 text-center text-tinta-700 sm:py-8 transition hover:border-tinta-400 hover:bg-tinta-50">
+                  <Camera className="h-8 w-8" /><span className="text-sm font-semibold">Tirar foto</span><span className="text-[11px] text-tinta-600/80">Abre a câmera</span>
                 </button>
-                <button onClick={() => galeriaRef.current?.click()} className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 px-4 py-8 text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                <button onClick={() => galeriaRef.current?.click()} className="flex flex-col items-center gap-1.5 rounded-2xl border-2 border-dashed border-slate-300 px-2 py-5 text-center text-slate-700 sm:py-8 transition hover:border-slate-400 hover:bg-slate-50"
                   onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); adicionar(e.dataTransfer.files) }}>
-                  <ImagePlus className="h-8 w-8" /><span className="font-semibold">Escolher imagem</span><span className="text-xs text-slate-500">ou arraste aqui · até {MAX_FOTOS} fotos</span>
+                  <ImagePlus className="h-8 w-8" /><span className="text-sm font-semibold">Da galeria</span><span className="text-[11px] text-slate-500">até {MAX_FOTOS} fotos</span>
                 </button>
               </div>
             ) : (
@@ -210,12 +226,45 @@ export default function EnviarFoto({ aberto, onFechar, onConcluir, onDigitar }) 
                 {fotos.map((f, i) => <img key={f.url} src={f.url} alt={`Página ${i + 1}`} className="mb-3 w-full rounded-lg shadow-sm last:mb-0" />)}
               </div>
               <div className="flex min-h-[320px] flex-col">
+                <fieldset className="space-y-1.5 border-b border-slate-100 px-4 py-3">
+                  <legend className="sr-only">Tema da redação</legend>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Tema da redação</p>
+                  {resultado.tema && (
+                    <label className={cx('flex cursor-pointer items-start gap-2.5 rounded-xl border p-2.5', escolhaTema === 'foto' ? 'border-tinta-300 bg-tinta-50/60' : 'border-slate-200')}>
+                      <input type="radio" name="tema-foto" className="mt-1 accent-tinta-600" checked={escolhaTema === 'foto'} onChange={() => setEscolhaTema('foto')} />
+                      <span className="min-w-0 flex-1">
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-tinta-600">Lido da foto · confira</span>
+                        <input value={temaFoto} onChange={(e) => { setTemaFoto(e.target.value); setEscolhaTema('foto') }} aria-label="Tema lido da foto"
+                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none focus:border-tinta-400 focus:ring-2 focus:ring-tinta-100" />
+                      </span>
+                    </label>
+                  )}
+                  {sugestoes.length > 0 && (
+                    <p className="pt-1 text-xs text-slate-500">{resultado.tema ? 'Ou use um tema parecido do site:' : 'Não achamos tema na foto. Temas do site que combinam com o seu texto:'}</p>
+                  )}
+                  {sugestoes.map(({ tema: t }) => (
+                    <label key={t.id} className={cx('flex cursor-pointer items-start gap-2.5 rounded-xl border p-2.5', escolhaTema === `site:${t.id}` ? 'border-tinta-300 bg-tinta-50/60' : 'border-slate-200')}>
+                      <input type="radio" name="tema-foto" className="mt-1 accent-tinta-600" checked={escolhaTema === `site:${t.id}`} onChange={() => setEscolhaTema(`site:${t.id}`)} />
+                      <span className="min-w-0 flex-1 text-sm leading-snug text-slate-800">
+                        {t.titulo}
+                        <span className="ml-1.5 whitespace-nowrap text-[11px] font-semibold text-slate-400">{t.origem === 'ENEM' ? `ENEM ${t.ano}` : t.aposta ? 'Aposta 2026' : 'Inédito'}</span>
+                      </span>
+                    </label>
+                  ))}
+                  {temaAtual && (
+                    <label className={cx('flex cursor-pointer items-start gap-2.5 rounded-xl border p-2.5', escolhaTema === 'atual' ? 'border-tinta-300 bg-tinta-50/60' : 'border-slate-200')}>
+                      <input type="radio" name="tema-foto" className="mt-1 accent-tinta-600" checked={escolhaTema === 'atual'} onChange={() => setEscolhaTema('atual')} />
+                      <span className="min-w-0 flex-1 text-sm leading-snug text-slate-600"><b className="font-semibold text-slate-700">Manter o tema escolhido:</b> {temaAtual.titulo}</span>
+                    </label>
+                  )}
+                  {!resultado.tema && !sugestoes.length && !temaAtual && <p className="text-xs text-slate-500">Nenhum tema identificado. Você pode escolher um no editor depois.</p>}
+                </fieldset>
                 <textarea value={texto} onChange={(e) => setTexto(e.target.value)} aria-label="Texto transcrito"
                   className="min-h-[300px] flex-1 resize-none bg-papel px-5 py-4 font-serif text-[16px] leading-7 text-slate-800 outline-none md:overflow-y-auto" />
                 <p className="border-t border-slate-100 px-5 py-2 text-xs text-slate-500">{contarPalavras(texto)} palavras · {texto.split('\n').filter((l) => l.trim()).length} parágrafo(s) · separe os parágrafos com Enter</p>
               </div>
             </div>
-            <div className="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-4 sm:flex-row sm:justify-end">
+            <div className="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:flex-row sm:justify-end sm:py-4">
               <Botao variante="secundario" icone={RotateCcw} onClick={reiniciar}>Usar outra foto</Botao>
               <Botao icone={CircleCheck} onClick={concluir} disabled={contarPalavras(texto) < 5}>Usar este texto</Botao>
             </div>

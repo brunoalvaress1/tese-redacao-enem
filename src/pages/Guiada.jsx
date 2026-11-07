@@ -72,16 +72,16 @@ export default function Guiada() {
   }
 
   return (
-    <Container className="py-8 sm:py-10">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <Container className="py-4 sm:py-10">
+      <div className="mb-4 flex items-end justify-between gap-2 sm:mb-6 sm:gap-4">
         <div>
-          <p className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wider text-tinta-600"><Compass className="h-4 w-4" /> Redação guiada</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Escreva parágrafo por parágrafo</h1>
+          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-tinta-600 sm:text-sm"><Compass className="h-4 w-4" /> Redação guiada</p>
+          <h1 className="mt-0.5 text-xl font-bold tracking-tight text-slate-900 sm:mt-1 sm:text-3xl">Parágrafo por parágrafo</h1>
         </div>
         <Botao variante="fantasma" tamanho="sm" icone={RotateCcw} onClick={recomecar}>Recomeçar</Botao>
       </div>
 
-      <Cartao className="mb-6 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <Cartao className="mb-4 flex flex-col gap-3 p-4 sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Tema</p>
           <p className={cx('mt-1 font-semibold', tema ? 'text-slate-900' : 'text-slate-500')}>{tema?.titulo || 'Escolha um tema para começar'}</p>
@@ -93,7 +93,7 @@ export default function Guiada() {
       </Cartao>
 
       {/* STEPPER */}
-      <ol className="mb-6 grid grid-cols-5 gap-2">
+      <ol className="mb-4 grid grid-cols-5 gap-1.5 sm:mb-6 sm:gap-2">
         {[...ETAPAS_GUIADA.map((e) => e.titulo), 'Revisão'].map((t, i) => {
           const completo = i < ETAPAS_GUIADA.length && contarPalavras(partes[ETAPAS_GUIADA[i].id] || '') >= ETAPAS_GUIADA[i].meta[0]
           return (

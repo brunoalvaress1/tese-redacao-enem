@@ -220,7 +220,7 @@ export default function Temas() {
   }, [busca])
 
   return (
-    <Container className="max-w-3xl py-6 sm:py-10">
+    <Container className="max-w-3xl py-4 sm:py-10">
       <div className="mb-5">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Temas de redação</h1>
         <p className="mt-1 text-sm text-slate-600">{TODOS_TEMAS.length} temas: apostas para 2026, todas as provas do ENEM e inéditos por assunto.</p>

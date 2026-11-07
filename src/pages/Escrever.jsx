@@ -136,18 +136,18 @@ export default function Escrever() {
   }, [texto, tema, usarLT, origem, stats.palavras, navigate])
 
   return (
-    <Container className="pb-40 pt-6 sm:pt-10 lg:pb-10">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <Container className="pb-40 pt-4 sm:pt-10 lg:pb-10">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-2 sm:mb-6 sm:gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wider text-tinta-600">Corrigir redação</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Escreva sua redação</h1>
+          <p className="hidden text-sm font-semibold uppercase tracking-wider text-tinta-600 sm:block">Corrigir redação</p>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:mt-1 sm:text-3xl">Escreva sua redação</h1>
         </div>
-        <p className="flex items-center gap-1.5 text-xs text-slate-500"><CircleCheck className="h-3.5 w-3.5 text-emerald-500" /> Rascunho salvo automaticamente</p>
+        <p className="flex items-center gap-1.5 text-xs text-slate-500"><CircleCheck className="h-3.5 w-3.5 text-emerald-500" /> <span className="sm:hidden">Salvo</span><span className="hidden sm:inline">Rascunho salvo automaticamente</span></p>
       </div>
 
       {/* atalho de foto no celular */}
-      <button onClick={() => setFotoAberta(true)} className="mb-4 flex w-full items-center gap-3 rounded-2xl border border-tinta-200 bg-gradient-to-r from-tinta-50 to-white p-4 text-left transition active:scale-[.99] lg:hidden">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-tinta-600 text-white shadow-sm"><Camera className="h-5 w-5" /></span>
+      <button onClick={() => setFotoAberta(true)} className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-tinta-200 bg-gradient-to-r from-tinta-50 to-white px-3 py-2.5 text-left transition active:scale-[.99] lg:hidden">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-tinta-600 text-white shadow-sm"><Camera className="h-4 w-4" /></span>
         <span className="flex-1">
           <span className="block text-sm font-bold text-slate-900">Escreveu no papel?</span>
           <span className="text-xs text-slate-600">Envie uma foto e corrija sem digitar</span>
@@ -156,17 +156,17 @@ export default function Escrever() {
       </button>
 
       {/* TEMA */}
-      <Cartao className="mb-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <Cartao className="mb-4 flex flex-col gap-3 p-4 sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-5">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Tema</p>
           {tema ? (
             <div className="mt-1 flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-semibold leading-snug text-slate-900">{tema.titulo}</h2>
+              <h2 className="text-[15px] font-semibold leading-snug text-slate-900 sm:text-lg">{tema.titulo}</h2>
               {tema.origem === 'ENEM' && <Selo cor="tinta">ENEM {tema.ano}</Selo>}
               {tema.livre && <Selo>Tema livre</Selo>}
             </div>
           ) : (
-            <p className="mt-1 text-slate-500">Nenhum tema selecionado — escolha um para verificar a aderência ao tema.</p>
+            <p className="mt-1 text-sm text-slate-500 sm:text-base">Nenhum tema escolhido<span className="hidden sm:inline"> — escolha um para verificar a aderência ao tema</span>.</p>
           )}
         </div>
         <div className="flex shrink-0 gap-2">
@@ -271,7 +271,8 @@ export default function Escrever() {
         </div>
       </div>
       <SeletorTema aberto={seletor} onFechar={() => setSeletor(false)} onEscolher={setTema} />
-      <EnviarFoto aberto={fotoAberta} onFechar={() => setFotoAberta(false)} onConcluir={(t) => { setTexto(t); setOrigem('foto') }}
+      <EnviarFoto aberto={fotoAberta} onFechar={() => setFotoAberta(false)} temaAtual={tema}
+        onConcluir={(t, novoTema) => { setTexto(t); setOrigem('foto'); if (novoTema) setTema(novoTema) }}
         onDigitar={() => setTimeout(() => document.querySelector('textarea[aria-label="Texto da redação"]')?.focus(), 100)} />
 
       {corrigindo && (

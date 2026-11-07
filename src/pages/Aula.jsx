@@ -71,7 +71,7 @@ export default function Aula() {
   }
 
   return (
-    <Container className="max-w-4xl py-10">
+    <Container className="max-w-4xl py-5 sm:py-10">
       <Link to="/aprenda" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-tinta-700"><ArrowLeft className="h-4 w-4" /> Todas as aulas</Link>
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <Selo cor="tinta">Aula {i + 1} de {AULAS.length}</Selo>
