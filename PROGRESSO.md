@@ -171,3 +171,11 @@ Limitações conhecidas (honestas):
   Funções testadas localmente: sem chave (503), sem login (401), token inválido validado no Supabase real (401), método errado (405).
 - Novo detector de leitura ruim: o site não mostra mais o texto ilegível; explica e oferece digitar/tentar outra foto.
 - Testes: **42/42**.
+
+### Passo 8 — Solução gratuita para ler letra de mão (2026-11-07)
+- Pedido: leitura de foto sem custo. A API do Claude não tem plano grátis → adicionado o **Google Gemini (plano gratuito
+  do AI Studio, sem cartão)** como provedor principal; o Claude continua como opção paga.
+- Formato da API conferido na documentação oficial (cabeçalho `x-goog-api-key`, `inlineData`/`mimeType`, apelido
+  `gemini-flash-latest`). Troca automática entre modelos quando a cota grátis de um esgota (429) ou ele não existe (404).
+- Resposta da correção validada e normalizada no servidor (notas sempre múltiplos de 40, JSON com ou sem cercas de código).
+- 7 testes novos com respostas simuladas do Gemini → **49/49**.

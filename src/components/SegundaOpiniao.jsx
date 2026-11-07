@@ -109,7 +109,7 @@ export default function SegundaOpiniao({ correcao, onAtualizar }) {
             </ul>
           </div>
         )}
-        <p className="text-xs text-slate-400">Correção gerada por IA (Claude). Use junto da correção automática; a nota oficial é dada por corretores humanos.</p>
+        <p className="text-xs text-slate-400">Correção gerada por IA{ia.provedor === 'gemini' ? ' (Google Gemini)' : ia.provedor === 'claude' ? ' (Claude)' : ''}. Use junto da correção automática; a nota oficial é dada por corretores humanos.</p>
       </div>
     </Cartao>
   )

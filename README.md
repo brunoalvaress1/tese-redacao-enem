@@ -8,7 +8,7 @@
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Supabase](https://img.shields.io/badge/Supabase-auth_%2B_banco-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com)
-[![Testes](https://img.shields.io/badge/testes-38_passando-success)](#-testes)
+[![Testes](https://img.shields.io/badge/testes-49_passando-success)](#-testes)
 
 **[🌐 Acessar o site](https://tese-redacao-enem.vercel.app)** · [Funcionalidades](#-funcionalidades) · [Como a nota é calculada](#-como-a-nota-é-calculada) · [Rodar localmente](#-rodar-localmente) · [Publicar](#-publicar-na-vercel)
 
@@ -92,7 +92,7 @@ O motor foi calibrado com redações de teste escritas para isso:
 
 - **Frontend:** React 18, JavaScript, Vite 5, Tailwind CSS 3, React Router 6
 - **Gráficos e ícones:** Recharts e lucide-react
-- **Leitura de foto:** Tesseract.js no navegador, ou Claude com visão via Edge Function
+- **Leitura de foto:** Tesseract.js no navegador, ou IA (Google Gemini grátis ou Claude) via funções da Vercel
 - **Contas e banco:** Supabase (Auth, Postgres com Row Level Security, Edge Functions)
 - **Testes:** Vitest (38 testes do motor de correção)
 - **Automação:** GitHub Actions (robô que mantém o Supabase ativo)
@@ -113,7 +113,7 @@ Sem configurar nada, o site já funciona e o histórico fica salvo no navegador.
 | Comando | O que faz |
 |---|---|
 | `npm run dev` | Servidor de desenvolvimento |
-| `npm test` | Roda os testes do motor de correção |
+| `npm test` | Roda os testes do motor de correção e das funções de IA |
 | `npm run build` | Gera a versão de produção em `dist/` |
 | `npm run preview` | Abre a versão de produção localmente |
 
@@ -133,29 +133,38 @@ Com o Supabase, cada aluno cria a própria conta e vê só as próprias redaçõ
 
 > A chave `anon` é pública e feita para ficar no site; a segurança vem das regras RLS do banco. **Nunca** coloque a chave `service_role` no frontend nem no repositório.
 
-## 🤖 Recursos com IA (opcional)
+## 🤖 Recursos com IA (opcional, pode ser 100% grátis)
 
-Dois recursos usam o Claude, da Anthropic. Eles rodam como **funções da Vercel** na pasta [`api/`](api/), com o código compartilhado em [`server/ia.js`](server/ia.js):
+Dois recursos usam IA. Eles rodam como **funções da Vercel** na pasta [`api/`](api/), com o código compartilhado em [`server/ia.js`](server/ia.js):
 
 | Rota | Para que serve |
 |---|---|
 | `POST /api/transcrever-redacao` | Lê a **foto da redação escrita à mão**. O leitor gratuito do navegador (Tesseract) só funciona bem com texto impresso. |
-| `POST /api/corrigir-redacao-ia` | Faz a "segunda opinião": notas, comentários e desvios em formato estruturado |
+| `POST /api/corrigir-redacao-ia` | Faz a "segunda opinião": notas, comentários e desvios |
 | `GET /api/status-ia` | Informa ao site se a IA está ativa |
 
-**Para ativar:** crie uma chave em [console.anthropic.com](https://console.anthropic.com) e adicione em **Vercel → Settings → Environment Variables**:
+### Opção grátis: Google Gemini
 
-| Variável | Valor |
+1. Crie uma chave gratuita em **[aistudio.google.com/apikey](https://aistudio.google.com/apikey)**. Basta uma conta Google, sem cartão de crédito.
+2. Em **Vercel → Settings → Environment Variables**, adicione `GEMINI_API_KEY` e marque como *Sensitive*.
+3. Faça um **Redeploy**.
+
+O plano grátis tem cota diária por modelo. Quando um modelo esgota, a função passa sozinha para o próximo (`gemini-flash-latest` → `gemini-3.6-flash` → `gemini-3.5-flash-lite` → `gemini-2.5-flash-lite`). Para fixar um modelo, defina `GEMINI_MODELO`. Pelos termos do plano gratuito, o Google pode usar o conteúdo enviado para melhorar o serviço; o site avisa isso no FAQ.
+
+### Opção paga: Claude
+
+Defina `ANTHROPIC_API_KEY` (chave de [console.anthropic.com](https://console.anthropic.com)). Se as duas chaves existirem, o Claude é usado, a menos que você defina `IA_PROVEDOR=gemini`.
+
+### Limites por aluno
+
+As rotas só atendem alunos logados. Cada aluno tem um limite diário, controlado pela tabela `transcricoes` do Supabase:
+
+| Variável | Padrão |
 |---|---|
-| `ANTHROPIC_API_KEY` | `sk-ant-...` (marque como *Sensitive*) |
-| `TRANSCRICOES_POR_DIA` | opcional, padrão `20` |
-| `CORRECOES_IA_POR_DIA` | opcional, padrão `10` |
+| `TRANSCRICOES_POR_DIA` | `20` leituras de foto |
+| `CORRECOES_IA_POR_DIA` | `10` correções com IA |
 
-Depois, faça um **Redeploy**. As rotas só atendem alunos logados e respeitam um limite diário por aluno, controlado pela tabela `transcricoes` do Supabase. Cada leitura custa alguns centavos de dólar.
-
-Sem a chave, o site continua 100% funcional. Se o leitor do navegador não entender a letra, ele avisa e sugere digitar o texto.
-
-> Alternativa para quem não hospeda na Vercel: as mesmas funções existem como Supabase Edge Functions em [`supabase/functions/`](supabase/functions/).
+Sem nenhuma chave, o site continua 100% funcional. Se o leitor do navegador não entender a letra, ele avisa e sugere digitar o texto.
 
 ## ⏰ Robô que mantém o Supabase ativo
 
@@ -205,11 +214,11 @@ PROGRESSO.md           # diário de desenvolvimento, testes e avaliações
 npm test
 ```
 
-Os 38 testes cobrem as regras gramaticais, a aderência ao tema, a calibração das notas, os critérios de nota zero, a limpeza da transcrição de foto, o sorteio por palavra-chave e as apostas de 2026.
+Os 49 testes cobrem as regras gramaticais, a aderência ao tema, a calibração das notas, os critérios de nota zero, a limpeza da transcrição de foto, o sorteio por palavra-chave e as apostas de 2026.
 
 ## 🙏 Créditos
 
 - [LanguageTool](https://languagetool.org): verificação ortográfica e gramatical em português
 - [Tesseract.js](https://tesseract.projectnaptha.com): leitura de texto em imagens no navegador
-- [Claude](https://www.anthropic.com): recursos opcionais de IA
+- [Google Gemini](https://aistudio.google.com) e [Claude](https://www.anthropic.com): recursos opcionais de IA
 - Temas oficiais: provas do ENEM/INEP de 1998 a 2025. Apostas de 2026 baseadas em notícias públicas, com as fontes citadas no próprio site.

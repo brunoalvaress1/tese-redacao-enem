@@ -67,7 +67,7 @@ const FAQ = [
   ['Preciso criar conta?', 'Não. Você pode corrigir sem cadastro e o histórico fica salvo no seu navegador. Se preferir, crie uma conta para guardar suas correções na nuvem e acessá-las em qualquer dispositivo.'],
   ['Como a nota é calculada?', 'O corretor analisa sua redação pelos critérios da matriz de referência do ENEM: domínio da norma-padrão (C1), compreensão da proposta e repertório (C2), argumentação (C3), coesão (C4) e proposta de intervenção (C5). Cada competência vale de 0 a 200, em níveis de 40 pontos.'],
   ['A nota é igual à do ENEM?', 'É uma estimativa automática baseada nos critérios oficiais. Ela é ótima para treinar e identificar pontos fracos, mas a nota real depende da avaliação de dois corretores humanos.'],
-  ['Meu texto fica salvo onde?', 'No seu navegador (ou na sua conta, se fizer login). A verificação ortográfica avançada envia o texto à API pública do LanguageTool apenas para checagem — você pode desativá-la no editor.'],
+  ['Meu texto fica salvo onde?', 'No seu navegador (ou na sua conta, se fizer login). A verificação ortográfica avançada envia o texto à API pública do LanguageTool apenas para checagem — você pode desativá-la no editor. A leitura de foto e a segunda opinião com IA enviam o conteúdo ao serviço de IA do site (Google Gemini, no plano gratuito, cujos termos permitem usar o conteúdo para melhorar o serviço).'],
   ['Posso corrigir redação escrita à mão?', 'Sim! Envie uma foto da folha: o texto é transcrito automaticamente e você confere a transcrição antes de corrigir. Com conta, a leitura usa IA e entende até letra cursiva. Você também pode digitar, colar o texto ou enviar um arquivo .txt.'],
 ]
 
