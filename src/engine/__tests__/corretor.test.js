@@ -1,0 +1,199 @@
+import { describe, it, expect } from 'vitest'
+import { corrigirRedacao, estatisticas } from '../corretor.js'
+import { verificarLocal } from '../gramatica.js'
+import { analisarTema } from '../tema.js'
+import { buscarTema, TEMAS } from '../../data/temas.js'
+import { paragrafos, sentencas, estimarLinhas } from '../texto.js'
+import * as A from './amostras.js'
+
+const corrigir = (texto, temaId) => corrigirRedacao({ texto, tema: temaId ? buscarTema(temaId) : null, usarLanguageTool: false })
+const tiposEm = (texto) => verificarLocal(texto).map((m) => m.regra)
+
+describe('utilitários de texto', () => {
+  it('divide parágrafos e sentenças', () => {
+    const t = 'Primeira frase. Segunda frase!\nOutro parágrafo, com Dr. Silva aqui. Fim.'
+    const p = paragrafos(t)
+    expect(p).toHaveLength(2)
+    expect(sentencas(p[0].texto)).toHaveLength(2)
+    expect(sentencas(p[1].texto, p[1].inicio)).toHaveLength(2)
+  })
+  it('estima linhas da folha do ENEM', () => {
+    expect(estimarLinhas('a'.repeat(140))).toBe(2)
+    expect(estimarLinhas(A.FORTE_2023)).toBeGreaterThan(20)
+  })
+})
+
+describe('competência 1 — regras locais', () => {
+  const casos = [
+    ['Eu acho que agente vai mudar isso.', 'agente-a-gente'],
+    ['A educação, à partir de agora, muda.', 'crase-a-partir'],
+    ['Haviam muitos problemas na cidade.', 'haviam'],
+    ['É importante, mais não é suficiente.', 'mais-adversativo'],
+    ['Todos têm direito a educação de qualidade.', 'crase-falta-regencia'],
+    ['Além disso a sociedade precisa agir.', 'virgula-conectivo'],
+    ['A educacao é essencial.', 'acento'],
+    ['O Estado é responsavel por isso.', 'ortografia'],
+    ['O dado é confiavel e a decisao foi tomada.', 'acento'],
+    ['Fazem dez anos que isso ocorre.', 'fazem-anos'],
+    ['Isso é muito importante pra sociedade.', 'informal'],
+    ['eles tem muitos direitos.', 'eles-tem'],
+    ['A situação onde vivemos é grave.', 'onde-tempo'],
+    ['Isso é um mal hábito da população.', 'mal-substantivo'],
+    ['O problema persiste. a sociedade se omite.', 'minuscula-inicio'],
+  ]
+  for (const [frase, regra] of casos) {
+    it(`detecta "${regra}" em: ${frase}`, () => {
+      expect(tiposEm(frase)).toContain(regra)
+    })
+  }
+  it('não acusa formas corretas', () => {
+    const corretas = 'Evidencia-se, portanto, que o agente responsável deve agir à medida que o problema cresce. Às vezes, há anos, a população tem acesso à educação. Isso influencia a sociedade.'
+    expect(verificarLocal(corretas).filter((m) => m.peso >= 0.5)).toEqual([])
+  })
+  it('redação forte quase sem marcações locais', () => {
+    const pontos = verificarLocal(A.FORTE_2023).reduce((t, m) => t + m.peso, 0)
+    expect(pontos).toBeLessThanOrEqual(1)
+  })
+})
+
+describe('aderência ao tema', () => {
+  it('pleno, tangência e fuga', () => {
+    expect(analisarTema(A.FORTE_2023, buscarTema('enem-2023')).status).toBe('pleno')
+    expect(analisarTema(A.TANGENCIA_2023, buscarTema('enem-2023')).status).toBe('tangencia')
+    expect(analisarTema(A.FUGA_OBESIDADE, buscarTema('in-desinformacao')).status).toBe('fuga')
+  })
+  it('tema livre digitado pelo estudante', () => {
+    const r = analisarTema(A.FUGA_OBESIDADE, { titulo: 'O avanço da obesidade infantil no Brasil' })
+    expect(r.status).toBe('pleno')
+  })
+  it('todos os temas do banco têm grupos válidos', () => {
+    expect(TEMAS.length).toBeGreaterThanOrEqual(80)
+    for (const t of TEMAS) {
+      expect(t.grupos.length).toBeGreaterThanOrEqual(2)
+      expect(new Set(TEMAS.map((x) => x.id)).size).toBe(TEMAS.length)
+    }
+  })
+})
+
+describe('correção completa', () => {
+  it('redação forte recebe nota alta (≥ 880)', async () => {
+    const r = await corrigir(A.FORTE_2023, 'enem-2023')
+    expect(r.anulacao).toBeNull()
+    expect(r.total).toBeGreaterThanOrEqual(880)
+    expect(r.notas.c5).toBe(200)
+    expect(r.notas.c2).toBeGreaterThanOrEqual(160)
+    expect(r.analise.proposta.quantidade).toBe(5)
+  })
+  it('redação mediana com erros fica na faixa intermediária', async () => {
+    const r = await corrigir(A.MEDIANA_DESINFORMACAO, 'in-desinformacao')
+    expect(r.anulacao).toBeNull()
+    expect(r.notas.c1).toBeLessThanOrEqual(80)
+    expect(r.notas.c5).toBeLessThanOrEqual(80)
+    expect(r.total).toBeGreaterThanOrEqual(280)
+    expect(r.total).toBeLessThanOrEqual(640)
+  })
+  it('fuga ao tema zera a redação', async () => {
+    const r = await corrigir(A.FUGA_OBESIDADE, 'in-desinformacao')
+    expect(r.anulacao?.motivo).toMatch(/Fuga/)
+    expect(r.total).toBe(0)
+  })
+  it('tangenciamento limita C2, C3 e C5 a 40', async () => {
+    const r = await corrigir(A.TANGENCIA_2023, 'enem-2023')
+    expect(r.anulacao).toBeNull()
+    expect(r.notas.c2).toBe(40)
+    expect(r.notas.c3).toBeLessThanOrEqual(40)
+    expect(r.notas.c5).toBeLessThanOrEqual(40)
+  })
+  it('texto com até 7 linhas é insuficiente', async () => {
+    const r = await corrigir(A.CURTA, 'in-desinformacao')
+    expect(r.anulacao?.motivo).toMatch(/insuficiente/i)
+    expect(r.total).toBe(0)
+  })
+  it('narrativa não atende ao tipo textual', async () => {
+    const r = await corrigir(A.NARRATIVA, 'in-desinformacao')
+    expect(r.anulacao?.motivo).toMatch(/dissertativo/)
+  })
+  it('desrespeito aos direitos humanos zera a C5', async () => {
+    const r = await corrigir(A.DH_VIOLACAO, null)
+    expect(r.notas.c5).toBe(0)
+    expect(r.marcas.some((m) => m.tipo === 'direitos humanos')).toBe(true)
+  })
+  it('notas são sempre múltiplos de 40 entre 0 e 200', async () => {
+    for (const texto of Object.values(A)) {
+      const r = await corrigir(texto, null)
+      for (const n of Object.values(r.notas)) {
+        expect(n % 40).toBe(0)
+        expect(n).toBeGreaterThanOrEqual(0)
+        expect(n).toBeLessThanOrEqual(200)
+      }
+      expect(r.total).toBe(Object.values(r.notas).reduce((a, b) => a + b, 0))
+    }
+  })
+  it('marcações apontam para trechos reais do texto', async () => {
+    const r = await corrigir(A.MEDIANA_DESINFORMACAO, 'in-desinformacao')
+    for (const m of r.marcas) {
+      expect(m.inicio).toBeGreaterThanOrEqual(0)
+      expect(m.fim).toBeLessThanOrEqual(r.texto.length)
+      expect(m.fim).toBeGreaterThan(m.inicio)
+    }
+  })
+  it('estatísticas básicas', () => {
+    const s = estatisticas(A.FORTE_2023)
+    expect(s.paragrafos).toBe(4)
+    expect(s.palavras).toBeGreaterThan(300)
+  })
+})
+
+describe('calibração adicional', () => {
+  it('redação bem escrita sem repertório fica entre 680 e 840', async () => {
+    const r = await corrigir(A.BOA_SEM_REPERTORIO_2019, 'enem-2019')
+    expect(r.total).toBeGreaterThanOrEqual(680)
+    expect(r.total).toBeLessThanOrEqual(840)
+    expect(r.notas.c2).toBeLessThanOrEqual(120)
+  })
+})
+
+describe('foto e temas', async () => {
+  const { limparTranscricao } = await import('../../lib/ocr.js')
+  const { temasPorPalavra, gerarTemaLivre, buscarTema, TODOS_TEMAS } = await import('../../data/temas.js')
+  const { APOSTAS, diasParaProva } = await import('../../data/apostas.js')
+
+  it('limpa transcrição: números de linha, hifenização e parágrafos', () => {
+    const bruto = '1 A desinformação é um pro-\n2 blema grave no Brasil.\n3 Muitas pessoas acreditam em tudo.\n\n4 Além disso, faltam ações.'
+    const t = limparTranscricao(bruto)
+    expect(t).toBe('A desinformação é um problema grave no Brasil. Muitas pessoas acreditam em tudo.\nAlém disso, faltam ações.')
+  })
+  it('reconstrói parágrafos sem linha em branco pelo tamanho da linha', () => {
+    const linhas = [
+      'Em primeiro lugar, as redes sociais facilitam a divulgação de notícias',
+      'falsas e boatos.',
+      'Além disso, a falta de educação midiática nas escolas agrava o problema',
+      'e precisa ser enfrentada.',
+    ].join('\n')
+    expect(limparTranscricao(linhas).split('\n')).toHaveLength(2)
+  })
+  it('sorteio por palavra-chave encontra temas e gera tema livre', () => {
+    expect(temasPorPalavra('internet').length).toBeGreaterThan(2)
+    const livre = gerarTemaLivre('mobilidade elétrica')
+    expect(livre.livre).toBe(true)
+    expect(livre.titulo).toMatch(/mobilidade elétrica/)
+    expect(livre.grupos[0]).toMatch(/mobilida/)
+  })
+  it('apostas 2026 são válidas, com fontes e buscáveis por id', () => {
+    expect(APOSTAS.length).toBeGreaterThanOrEqual(10)
+    for (const a of APOSTAS) {
+      expect(a.fontes.length).toBeGreaterThan(0)
+      expect(a.porque.length).toBeGreaterThan(0)
+      expect(buscarTema(a.id)).toBe(a)
+    }
+    expect(new Set(TODOS_TEMAS.map((t) => t.id)).size).toBe(TODOS_TEMAS.length)
+    expect(diasParaProva(new Date('2026-11-07T12:00:00-03:00'))).toBe(1)
+    expect(diasParaProva(new Date('2026-12-01T12:00:00-03:00'))).toBeNull()
+  })
+  it('aposta forte corrige com aderência ao tema', async () => {
+    const tema = buscarTema('ap-eca-digital')
+    const texto = A.FORTE_2023.replace(/trabalho de cuidado realizado pelas brasileiras/g, 'uso de redes sociais por crianças')
+    const r = await corrigirRedacao({ texto, tema, usarLanguageTool: false })
+    expect(['pleno', 'parcial', 'tangencia']).toContain(r.analise.tema.status)
+  })
+})

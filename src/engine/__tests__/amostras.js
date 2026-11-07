@@ -1,0 +1,42 @@
+// Redações de teste (textos originais escritos para calibrar o corretor).
+
+export const FORTE_2023 = `Na obra "O Segundo Sexo", a filósofa Simone de Beauvoir afirma que ninguém nasce mulher, mas torna-se mulher, evidenciando que os papéis de gênero são construções sociais. Essa reflexão permanece atual no Brasil, onde o trabalho de cuidado realizado pelas brasileiras ainda é invisibilizado. Tal cenário é motivado, sobretudo, pela herança patriarcal da sociedade e pela omissão do Estado na criação de políticas públicas de apoio às cuidadoras.
+Em primeiro lugar, cabe destacar que a divisão sexual do trabalho tem raízes históricas. Desde o período colonial, às mulheres foi atribuída a responsabilidade pelo lar e pela criação dos filhos, enquanto aos homens coube o espaço público e remunerado. Esse modelo, embora questionado, ainda se reproduz: segundo dados do IBGE, as brasileiras dedicam quase o dobro de horas semanais aos afazeres domésticos em comparação aos homens. Dessa forma, a sobrecarga feminina é naturalizada como um dever afetivo, e não reconhecida como atividade essencial para a manutenção da vida e da economia.
+Além disso, a negligência estatal agrava o problema. A Constituição Federal de 1988 garante, em seu artigo 6º, a proteção à maternidade e à infância; no entanto, a escassez de creches públicas e de serviços de apoio a idosos transfere essa demanda quase exclusivamente para as famílias — e, nelas, para as mulheres. Consequentemente, muitas cidadãs abandonam os estudos ou o emprego, o que aprofunda a desigualdade de gênero e a dependência financeira. Assim, a ausência de políticas públicas perpetua a invisibilidade de uma tarefa que sustenta toda a sociedade.
+Portanto, é imprescindível enfrentar a invisibilidade do trabalho de cuidado exercido pela mulher. Para isso, o Ministério das Mulheres, em parceria com o Ministério da Educação, deve promover campanhas educativas nas escolas e na mídia, por meio de palestras e propagandas que discutam a divisão igualitária das tarefas domésticas, a fim de desconstruir a herança patriarcal. Paralelamente, cabe ao Governo Federal ampliar a rede de creches e de centros-dia para idosos, com o objetivo de reduzir a sobrecarga feminina. Desse modo, a lição de Beauvoir será, enfim, compreendida na prática.`
+
+export const MEDIANA_DESINFORMACAO = `As fake news é um problema muito grande hoje em dia no Brasil. Muitas pessoas acreditam em tudo que vê na internet e compartilham sem verificar, isso causa muitos problemas pra sociedade e pra democracia do nosso pais.
+Em primeiro lugar as pessoas não tem o habito de checar as informações que recebem. Elas recebem uma mensagem no celular e logo passam pra frente, porque acham que é verdade. Isso acontece porque a educação no Brasil não ensina a gente a ter senso critico, e muitas pessoas acaba acreditando em mentiras.
+Alem disso, as redes sociais ganham dinheiro com isso. Quanto mais as pessoas compartilham as noticias, mais as empresas lucram, mais elas não fazem nada pra resolver. Haviam muitas noticias falsas nas eleições e ninguém foi punido por isso.
+Portanto, é preciso que as pessoas tenham mais consciência e parem de compartilhar fake news. O governo deve fazer alguma coisa para acabar com as fake news no Brasil.`
+
+export const FUGA_OBESIDADE = `A obesidade infantil cresce de forma alarmante no Brasil. Segundo a Organização Mundial da Saúde, o excesso de peso na infância aumenta o risco de diabetes e de doenças cardiovasculares na vida adulta, o que evidencia a gravidade do problema.
+Em primeiro lugar, a alimentação das famílias mudou nas últimas décadas. Os produtos ultraprocessados, baratos e práticos, substituíram refeições caseiras, e as crianças passaram a consumir açúcar e gordura em excesso desde cedo, o que compromete o desenvolvimento saudável.
+Além disso, o sedentarismo agrava esse quadro. Com menos espaços públicos de lazer e mais horas diante da televisão, as crianças praticam pouca atividade física, de modo que o gasto calórico diminui e o ganho de peso se acelera.
+Portanto, o Ministério da Saúde deve promover campanhas de alimentação saudável nas escolas, por meio de aulas de nutrição e hortas comunitárias, a fim de reduzir a obesidade infantil e garantir uma infância mais saudável às futuras gerações.`
+
+export const TANGENCIA_2023 = `A violência contra a mulher é um problema grave no Brasil. Segundo o Fórum Brasileiro de Segurança Pública, milhares de brasileiras são agredidas todos os anos, o que evidencia a persistência do machismo na sociedade e a fragilidade das políticas de proteção.
+Em primeiro lugar, o machismo estrutural naturaliza a agressão. Desde cedo, meninos aprendem que podem controlar as companheiras, e muitas vítimas não denunciam por medo ou por dependência financeira, de modo que o ciclo de violência se perpetua dentro dos lares.
+Além disso, a Lei Maria da Penha, embora seja um avanço, não é aplicada de forma eficiente. Faltam delegacias especializadas e casas de acolhimento, sobretudo no interior do país, o que deixa muitas mulheres desamparadas diante do agressor.
+Portanto, o Governo Federal deve ampliar a rede de delegacias da mulher, por meio de investimentos e da capacitação de policiais, a fim de garantir a proteção das vítimas e reduzir os índices de agressão no país.`
+
+export const CURTA = `A desinformação é um problema sério nas redes sociais.
+É preciso combater as notícias falsas com educação.`
+
+export const NARRATIVA = `Era uma vez um menino que morava numa cidade pequena e usava a internet todos os dias.
+Certo dia, eu fui até a casa da minha avó e lembro que ela recebeu uma notícia falsa pelo celular.
+— Vó, isso é mentira! — eu disse.
+— Mas está na internet, menino — respondeu ela, preocupada com as redes sociais.
+— Nem tudo que está nas redes sociais é verdade — eu falei, e mostrei a ela como checar as informações.
+De repente, ela entendeu e começou a verificar tudo antes de compartilhar com a família e com as amigas da igreja, e eu fiquei muito feliz com isso, porque a desinformação faz muito mal para as pessoas.
+Quando eu era pequeno, eu tinha medo da internet, mas hoje eu sei que é preciso usar com cuidado e atenção para não espalhar mentiras.`
+
+export const DH_VIOLACAO = `A violência urbana é um dos maiores problemas da sociedade brasileira. Segundo o Atlas da Violência, o país registra dezenas de milhares de homicídios por ano, o que evidencia a gravidade dessa crise de segurança pública.
+Em primeiro lugar, a desigualdade social contribui para o aumento da criminalidade. Jovens sem acesso à educação e ao emprego tornam-se mais vulneráveis ao aliciamento pelo crime organizado, de modo que o problema se perpetua nas periferias.
+Além disso, a impunidade estimula novos crimes. A lentidão do sistema judiciário faz com que muitos criminosos permaneçam soltos, o que gera na população uma sensação constante de insegurança e medo nas cidades.
+Portanto, o Congresso Nacional deve aprovar a pena de morte para criminosos violentos, por meio de uma emenda constitucional, a fim de reduzir a violência na sociedade brasileira.`
+
+export const BOA_SEM_REPERTORIO_2019 = `O cinema é uma importante forma de arte e de lazer, capaz de estimular a reflexão e a sensibilidade das pessoas. No entanto, no Brasil, o acesso às salas de exibição ainda é restrito a uma pequena parcela da população. Esse problema ocorre, principalmente, por causa da concentração das salas nos grandes centros urbanos e do alto preço dos ingressos.
+Em primeiro lugar, a maior parte dos cinemas está localizada em shoppings de capitais e de cidades grandes. Dessa forma, moradores de municípios pequenos e de periferias precisam se deslocar por longas distâncias para assistir a um filme, o que torna a experiência cara e cansativa. Assim, muitas pessoas simplesmente desistem de frequentar o cinema.
+Além disso, o valor dos ingressos é elevado para grande parte das famílias brasileiras. Quando somado ao transporte e à alimentação, o passeio se torna inviável para quem tem renda baixa. Consequentemente, o cinema passa a ser visto como um programa de luxo, e não como um direito cultural de todos.
+Portanto, é necessário democratizar o acesso ao cinema no país. Para isso, o Ministério da Cultura deve criar salas de exibição públicas em cidades pequenas e em bairros periféricos, por meio de parcerias com as prefeituras, a fim de levar a sétima arte a toda a população. Além disso, as empresas de cinema devem oferecer ingressos com desconto para estudantes e famílias de baixa renda.`

@@ -1,0 +1,51 @@
+# Robô que mantém o Supabase acordado: o plano grátis pausa projetos após 7 dias sem atividade.
+# Roda a cada 5 dias (e pode ser disparado manualmente na aba "Actions").
+# Configure em Settings → Secrets and variables → Actions:
+#   SUPABASE_URL       = https://xxxx.supabase.co
+#   SUPABASE_ANON_KEY  = chave "anon public"
+name: Manter Supabase ativo
+
+on:
+  schedule:
+    - cron: '17 12 */5 * *' # 12:17 UTC, a cada 5 dias
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Chamar o Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/manter-supabase-ativo.mjs
+
+      # O GitHub desativa agendamentos em repositórios sem commits há 60 dias.
+      # Se o último commit tiver mais de 45 dias, o robô registra um commit leve para manter tudo ligado.
+      - name: Manter o agendamento do GitHub ativo
+        run: |
+          ultimo=$(git log -1 --format=%ct)
+          agora=$(date +%s)
+          dias=$(( (agora - ultimo) / 86400 ))
+          echo "Último commit há $dias dias"
+          if [ "$dias" -ge 45 ]; then
+            mkdir -p .github
+            date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/ultimo-ping.txt
+            git config user.name "robo-supabase"
+            git config user.email "robo-supabase@users.noreply.github.com"
+            git add .github/ultimo-ping.txt
+            git commit -m "chore: manter agendamento ativo"
+            git push
+          fi
