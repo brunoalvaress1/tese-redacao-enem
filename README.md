@@ -10,7 +10,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-auth_%2B_banco-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com)
 [![Testes](https://img.shields.io/badge/testes-38_passando-success)](#-testes)
 
-**[🌐 Acessar o site](#-site-no-ar)** · [Funcionalidades](#-funcionalidades) · [Como a nota é calculada](#-como-a-nota-é-calculada) · [Rodar localmente](#-rodar-localmente) · [Publicar](#-publicar-na-vercel)
+**[🌐 Acessar o site](https://tese-redacao-enem.vercel.app)** · [Funcionalidades](#-funcionalidades) · [Como a nota é calculada](#-como-a-nota-é-calculada) · [Rodar localmente](#-rodar-localmente) · [Publicar](#-publicar-na-vercel)
 
 <img src="docs/screenshots/inicio.png" alt="Página inicial do Tese" width="900">
 
@@ -172,7 +172,9 @@ A cada `git push` na branch `main`, a Vercel publica a nova versão automaticame
 
 ## 🌍 Site no ar
 
-> O endereço público aparece aqui depois da publicação na Vercel.
+**👉 [tese-redacao-enem.vercel.app](https://tese-redacao-enem.vercel.app)**
+
+Publicado na Vercel, com deploy automático a cada `git push` na branch `main`.
 
 ## 📁 Estrutura
 

@@ -150,3 +150,12 @@ Limitações conhecidas (honestas):
 - A leitura de foto no navegador foi testada com letra manuscrita digital; letra cursiva real em foto de celular
   tende a exigir a leitura com IA.
 - O cadastro real não foi testado de ponta a ponta para não criar contas de teste no projeto do usuário.
+
+### Passo 6 — Publicação (2026-11-07)
+- GitHub: https://github.com/brunoalvaress1/tese-redacao-enem (criado como **privado**: a criação pública foi
+  bloqueada pelas permissões do Claude Code; o dono pode torná-lo público em Settings).
+- Vercel: https://tese-redacao-enem.vercel.app — conectado ao GitHub (deploy automático a cada push),
+  variáveis `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` configuradas.
+- Verificação em produção: rotas internas respondem 200, correção completa funcionando (mesma nota do teste local),
+  cadastro com Supabase ativo, nenhum erro no console.
+- Pendências do dono: secrets do robô no GitHub (gravação bloqueada pelas permissões) e colar o `schema.sql` atualizado.
