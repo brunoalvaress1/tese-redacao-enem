@@ -8,7 +8,7 @@
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Supabase](https://img.shields.io/badge/Supabase-auth_%2B_banco-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com)
-[![Testes](https://img.shields.io/badge/testes-49_passando-success)](#-testes)
+[![Testes](https://img.shields.io/badge/testes-60_passando-success)](#-testes)
 
 **[🌐 Acessar o site](https://tese-redacao-enem.vercel.app)** · [Funcionalidades](#-funcionalidades) · [Como a nota é calculada](#-como-a-nota-é-calculada) · [Rodar localmente](#-rodar-localmente) · [Publicar](#-publicar-na-vercel)
 
@@ -32,6 +32,8 @@ A correção roda inteira no navegador, por um motor que aplica os critérios da
 |---|---|---|
 | 📝 | **Correção nas 5 competências** | Nota de 0 a 1000, nível de cada competência (0 a 200) e critérios de nota zero |
 | 🖍️ | **Erros marcados no texto** | Ortografia, acentuação, crase, concordância, pontuação e informalidade, com explicação e sugestão ao clicar |
+| 🎯 | **Como subir sua nota** | As mudanças que mais rendem pontos, em ordem, com o ganho possível e um exemplo pronto |
+| 📍 | **Erros e melhorias por parágrafo** | Cada parágrafo mostra seus erros (trecho → correção → explicação) e o que melhorar ali; palavras repetidas vêm com sinônimos |
 | 💬 | **Comentários detalhados** | Pontos fortes, o que melhorar e o caminho exato para subir de nível em cada competência |
 | 📷 | **Correção por foto** | Fotografe a redação feita no papel; o texto é transcrito e você confere antes de corrigir |
 | 🎯 | **Detecção de fuga ao tema** | Diz se o recorte foi abordado por completo, tangenciado ou se houve fuga |
@@ -214,7 +216,7 @@ PROGRESSO.md           # diário de desenvolvimento, testes e avaliações
 npm test
 ```
 
-Os 49 testes cobrem as regras gramaticais, a aderência ao tema, a calibração das notas, os critérios de nota zero, a limpeza da transcrição de foto, o sorteio por palavra-chave e as apostas de 2026.
+Os 60 testes cobrem as regras gramaticais, a aderência ao tema, a calibração das notas, os critérios de nota zero, a limpeza da transcrição de foto, o sorteio por palavra-chave e as apostas de 2026.
 
 ## 🙏 Créditos
 

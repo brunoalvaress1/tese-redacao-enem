@@ -8,6 +8,8 @@ import { Botao, Cartao, Container, Selo, Carregando, Vazio, BarraNota, cx } from
 import NotaGauge from '../components/NotaGauge.jsx'
 import TextoMarcado from '../components/TextoMarcado.jsx'
 import SegundaOpiniao from '../components/SegundaOpiniao.jsx'
+import { Prioridades, ErrosPorParagrafo } from '../components/RelatorioMelhorias.jsx'
+import { diagnosticar } from '../engine/diagnostico.js'
 import { obterCorrecao, salvarRascunho } from '../lib/armazenamento.js'
 import { COMP, CHAVES, formatarData } from '../lib/competencias.js'
 import { DESCRITORES } from '../engine/corretor.js'
@@ -164,6 +166,7 @@ export default function Correcao() {
     })
   }, [r])
   const marcaSel = r?.marcas.find((m) => m.id === sel)
+  const diag = useMemo(() => (r ? diagnosticar(r) : null), [r])
 
   if (r === undefined) return <Carregando texto="Carregando correção…" />
   if (r === null) {
@@ -259,6 +262,8 @@ export default function Correcao() {
         </div>
       )}
 
+      <div className="mt-6"><Prioridades diag={diag} total={r.total} /></div>
+
       {/* TEXTO + COMENTÁRIOS */}
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_420px]">
         <div className="min-w-0 space-y-4">
@@ -302,35 +307,7 @@ export default function Correcao() {
             </p>
           </Cartao>
 
-          {/* LISTA DE DESVIOS */}
-          <Cartao className="overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-              <h2 className="flex items-center gap-2 font-semibold text-slate-900"><ListChecks className="h-5 w-5 text-rose-500" /> Desvios encontrados</h2>
-              <Selo cor={desvios.length ? 'rosa' : 'verde'}>{desvios.length}</Selo>
-            </div>
-            {desvios.length ? (
-              <ul className="divide-y divide-slate-100">
-                {desvios.map((m) => (
-                  <li key={m.id}>
-                    <button onClick={() => irParaMarca(m.id)} className={cx('flex w-full gap-3 px-5 py-3 text-left transition hover:bg-slate-50', sel === m.id && 'bg-slate-50')}>
-                      <span className={cx('mt-0.5 shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase', COMP[`c${m.competencia}`].bg, COMP[`c${m.competencia}`].texto)}>C{m.competencia}</span>
-                      <div className="min-w-0 flex-1">
-                        <p className="flex flex-wrap items-center gap-1.5 text-sm">
-                          <span className="font-medium text-rose-700 line-through decoration-rose-300">{m.trecho}</span>
-                          {m.sugestoes?.[0] && <><ArrowRight className="h-3 w-3 text-slate-400" /><span className="font-semibold text-emerald-700">{m.sugestoes[0]}</span></>}
-                          <span className="text-xs text-slate-400">· {m.tipo}</span>
-                        </p>
-                        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-slate-500">{m.msg}</p>
-                      </div>
-                      <ArrowUpRight className="mt-1 h-4 w-4 shrink-0 text-slate-300" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="px-5 py-6 text-sm text-slate-500">Nenhum desvio encontrado. Excelente!</p>
-            )}
-          </Cartao>
+          <ErrosPorParagrafo diag={diag} onIrParaMarca={irParaMarca} />
           <SegundaOpiniao correcao={r} onAtualizar={setR} />
         </div>
 

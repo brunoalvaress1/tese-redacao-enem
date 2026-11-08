@@ -278,3 +278,22 @@ describe('calibração com a 2ª redação real', () => {
     expect(verificarLocal(certas).filter((m) => ['sintaxe-lei-dever', 'virgula-verbo-complemento', 'virgula-adversativa'].includes(m.regra))).toEqual([])
   })
 })
+
+describe('diagnóstico: erros e melhorias por parágrafo', async () => {
+  const { diagnosticar } = await import('../diagnostico.js')
+  const tema = { id: null, titulo: 'Os desafios para garantir a proteção de crianças e adolescentes no ambiente digital brasileiro' }
+  it('aponta erros no parágrafo certo, parágrafo de uma frase e o que falta na proposta', async () => {
+    const r = await corrigirRedacao({ texto: A.REAL_2, tema, usarLanguageTool: false })
+    const d = diagnosticar(r)
+    expect(d.porParagrafo[0].erros.map((e) => e.titulo)).toEqual(expect.arrayContaining(['Estrutura da frase', 'Pontuação']))
+    expect(d.porParagrafo[1].melhorias.map((m) => m.titulo)).toContain('Parágrafo de uma frase só')
+    expect(d.porParagrafo.at(-1).melhorias.map((m) => m.titulo)).toContain('Falta o detalhamento')
+    expect(d.prioridades.length).toBeGreaterThan(0)
+    expect(d.prioridades.every((p) => p.ganho > 0)).toBe(true)
+    expect(d.ganhoPossivel).toBe(1000 - r.total)
+  })
+  it('redação anulada vira a primeira prioridade', async () => {
+    const r = await corrigirRedacao({ texto: A.FUGA_OBESIDADE, tema: buscarTema('in-desinformacao'), usarLanguageTool: false })
+    expect(diagnosticar(r).prioridades[0].titulo).toMatch(/anulada/i)
+  })
+})

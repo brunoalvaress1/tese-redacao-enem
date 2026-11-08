@@ -209,3 +209,13 @@ Limitações conhecidas (honestas):
   vírgula antes de "entretanto/contudo" entre orações. C5: agente após "cabe ao poder do…".
 - Resultado: 2ª redação 920 → **800** (estável em 4 variações); 1ª redação segue **880** (= outro corretor);
   redação de teste "nota 1000" agora 960 (repetição de "públicas" 4×). Testes: **58/58**.
+
+### Passo 12 — Erros e onde melhorar (2026-11-08)
+- Novo módulo `engine/diagnostico.js`: transforma a análise em itens localizados por parágrafo (erros com trecho,
+  correção e explicação; melhorias com exemplo), itens do texto todo (repetições com sinônimos, tamanho, recorte do tema)
+  e prioridades (competências com mais pontos a ganhar + a 1ª ação de cada uma). Recalculado a partir do texto,
+  então funciona também para correções antigas.
+- Tela de resultado: cartão "Como subir sua nota" logo abaixo das notas e "Erros e melhorias por parágrafo" (sanfona)
+  no lugar da lista solta de desvios; tocar num erro leva ao trecho destacado no texto.
+- Validado com a 2ª redação real: erros no parágrafo certo, "parágrafo de uma frase só", repertório faltando nos
+  desenvolvimentos, detalhamento faltando na proposta. Testes: **60/60**.

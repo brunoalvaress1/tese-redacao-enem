@@ -408,6 +408,7 @@ export function analisarCoesao(texto, pars, temaRadicais = new Set()) {
   const n = pars.length
   let transicoes = 0
   let transicoesOk = 0
+  const semConectivo = []
   const inter = new Set()
   for (let i = 1; i < n; i++) {
     transicoes++
@@ -418,7 +419,7 @@ export function analisarCoesao(texto, pars, temaRadicais = new Set()) {
     if (c || referencial) {
       transicoesOk++
       if (c) inter.add(c)
-    }
+    } else semConectivo.push(i)
   }
   const intra = conectivos.filter((c) => !inter.has(c))
   const totalSentencas = pars.reduce((t, p) => t + sentencas(p.texto).length, 0) || 1
@@ -449,7 +450,7 @@ export function analisarCoesao(texto, pars, temaRadicais = new Set()) {
   const repeticoesLeves = Object.entries(grupos).filter(([r, lista]) => !temaRadicais.has(r) && lista.length === 4).length
 
   return {
-    conectivos, inter: [...inter], intra, transicoes, transicoesOk, variedade, contagem, repetidosConectivos,
+    conectivos, inter: [...inter], intra, transicoes, transicoesOk, semConectivo, variedade, contagem, repetidosConectivos,
     referenciais, repeticoes, repeticoesLeves, densidadeIntra: intra.length / totalSentencas,
   }
 }
