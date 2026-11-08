@@ -36,7 +36,7 @@ export function estatisticas(texto) {
 export function verificarAnulacao(texto, stats, temaAnalise) {
   if (!texto.trim() || stats.palavras < 5) return { motivo: 'Texto em branco', detalhe: 'Não há texto suficiente para avaliar.' }
   if (stats.linhas < MIN_LINHAS) {
-    return { motivo: 'Texto insuficiente', detalhe: `O texto ocuparia cerca de ${stats.linhas} linha(s). Redações com até 7 linhas recebem nota zero no ENEM.` }
+    return { motivo: 'Texto insuficiente', detalhe: `${stats.linhasFolha ? `A redação ocupou ${stats.linhas} linha(s)` : `O texto ocuparia cerca de ${stats.linhas} linha(s)`}. Redações com até 7 linhas recebem nota zero no ENEM.` }
   }
   const tokens = palavras(texto).map((p) => p.norm)
   const ingles = tokens.filter((t) => INGLES.has(t)).length
@@ -64,9 +64,15 @@ export function verificarAnulacao(texto, stats, temaAnalise) {
  * @param {object|null} p.tema  { id, titulo, grupos? }
  * @param {boolean} [p.usarLanguageTool=true]
  */
-export async function corrigirRedacao({ texto, tema = null, usarLanguageTool = true, origem = 'digitado' }) {
+export async function corrigirRedacao({ texto, tema = null, usarLanguageTool = true, origem = 'digitado', linhasFolha = null }) {
   const textoLimpo = texto.replace(/\r\n?/g, '\n').replace(/[ \t]+$/gm, '')
   const stats = estatisticas(textoLimpo)
+  // linhas contadas na foto da folha valem mais que a estimativa pelo tamanho do texto
+  if (Number.isInteger(linhasFolha) && linhasFolha >= 1 && linhasFolha <= 90) {
+    stats.linhasEstimadas = stats.linhas
+    stats.linhas = linhasFolha
+    stats.linhasFolha = linhasFolha
+  }
   const pars = paragrafos(textoLimpo)
   const temaAnalise = analisarTema(textoLimpo, tema)
   const temaGrupos = gruposDoTema(tema)
@@ -150,7 +156,9 @@ export async function corrigirRedacao({ texto, tema = null, usarLanguageTool = t
 
   const avisos = []
   if (avisoGramatica) avisos.push(avisoGramatica)
-  if (stats.linhas > MAX_LINHAS) avisos.push(`O texto ocuparia cerca de ${stats.linhas} linhas — mais que as 30 da folha oficial. Na prova, o excedente não é considerado.`)
+  if (stats.linhas > MAX_LINHAS) avisos.push(stats.linhasFolha
+    ? `A redação ocupou ${stats.linhas} linhas — mais que as 30 da folha oficial. Na prova, o excedente não é considerado.`
+    : `O texto ocuparia cerca de ${stats.linhas} linhas — mais que as 30 da folha oficial. Na prova, o excedente não é considerado.`)
   if (!tema) avisos.push('Nenhum tema foi informado: a aderência ao tema não pôde ser verificada.')
 
   return {

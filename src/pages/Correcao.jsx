@@ -230,7 +230,7 @@ export default function Correcao() {
         <Cartao className="flex flex-col items-center justify-center p-4 text-center sm:p-6">
           <NotaGauge total={r.total} tamanho={170} />
           <div className="mt-2 grid w-full grid-cols-3 gap-2 text-center">
-            {[['Palavras', r.analise.estatisticas.palavras], ['Linhas', `≈${r.analise.estatisticas.linhas}`], ['Desvios', desvios.length]].map(([a, b]) => (
+            {[['Palavras', r.analise.estatisticas.palavras], [r.analise.estatisticas.linhasFolha ? 'Linhas na folha' : 'Linhas (estim.)', r.analise.estatisticas.linhasFolha ? r.analise.estatisticas.linhas : `≈${r.analise.estatisticas.linhas}`], ['Desvios', desvios.length]].map(([a, b]) => (
               <div key={a} className="rounded-xl bg-slate-50 py-2"><p className="font-bold tabular-nums text-slate-900">{b}</p><p className="text-[11px] text-slate-500">{a}</p></div>
             ))}
           </div>

@@ -1,6 +1,6 @@
 // Utilitários de processamento de texto em português.
 
-export const CARACTERES_POR_LINHA = 80 // média de uma linha manuscrita da folha do ENEM (~30 linhas ≈ 2.400 caracteres)
+export const CARACTERES_POR_LINHA = 66 // média medida em redações manuscritas reais na folha do ENEM (56–64 caracteres/linha + recuos)
 export const MAX_LINHAS = 30
 export const MIN_LINHAS = 8 // até 7 linhas = texto insuficiente (nota zero)
 

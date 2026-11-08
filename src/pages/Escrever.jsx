@@ -75,6 +75,7 @@ export default function Escrever() {
   const destacarEnvio = busca.get('enviar') === '1'
   const [fotoAberta, setFotoAberta] = useState(busca.get('foto') === '1')
   const [origem, setOrigem] = useState(rascunho?.origem || 'digitado')
+  const [linhasFolha, setLinhasFolha] = useState(rascunho?.linhasFolha || null)
 
   useEffect(() => {
     if (temaId) setTema(buscarTema(temaId))
@@ -82,19 +83,24 @@ export default function Escrever() {
 
   // salva rascunho automaticamente
   useEffect(() => {
-    const id = setTimeout(() => salvarRascunho({ texto, temaId: tema?.id || null, temaLivre: tema?.livre ? tema.titulo : null, origem }), 400)
+    const id = setTimeout(() => salvarRascunho({ texto, temaId: tema?.id || null, temaLivre: tema?.livre ? tema.titulo : null, origem, linhasFolha }), 400)
     return () => clearTimeout(id)
   }, [texto, tema, origem])
 
   useEffect(() => {
-    if (!texto.trim()) setOrigem('digitado')
+    if (!texto.trim()) {
+      setOrigem('digitado')
+      setLinhasFolha(null)
+    }
   }, [texto])
 
   useEffect(() => {
     try { localStorage.setItem('tese:lt', usarLT ? '1' : '0') } catch { /* sem armazenamento */ }
   }, [usarLT])
 
-  const stats = useMemo(() => estatisticas(texto), [texto])
+  const statsTexto = useMemo(() => estatisticas(texto), [texto])
+  // linhas contadas na foto da folha valem mais que a estimativa
+  const stats = linhasFolha ? { ...statsTexto, linhas: linhasFolha } : statsTexto
   const pctLinhas = Math.min(100, (stats.linhas / MAX_LINHAS) * 100)
   const curto = stats.linhas < MIN_LINHAS
   const longo = stats.linhas > MAX_LINHAS
@@ -120,7 +126,7 @@ export default function Escrever() {
     const timer = setInterval(() => setEtapa((e) => Math.min(e + 1, ETAPAS.length - 1)), 450)
     try {
       const [resultado] = await Promise.all([
-        corrigirRedacao({ texto, tema, usarLanguageTool: usarLT, origem }),
+        corrigirRedacao({ texto, tema, usarLanguageTool: usarLT, origem, linhasFolha }),
         new Promise((r) => setTimeout(r, 1800)),
       ])
       await salvarCorrecao(resultado)
@@ -133,7 +139,7 @@ export default function Escrever() {
     } finally {
       clearInterval(timer)
     }
-  }, [texto, tema, usarLT, origem, stats.palavras, navigate])
+  }, [texto, tema, usarLT, origem, linhasFolha, stats.palavras, navigate])
 
   return (
     <Container className="pb-40 pt-4 sm:pt-10 lg:pb-10">
@@ -182,7 +188,7 @@ export default function Escrever() {
             <div className="flex items-center justify-between border-b border-slate-200/80 bg-white/70 px-4 py-2.5">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Folha de redação</span>
               <span className={cx('text-xs font-semibold tabular-nums', longo ? 'text-rose-600' : curto ? 'text-amber-600' : 'text-emerald-600')}>
-                ≈ {stats.linhas}/{MAX_LINHAS} linhas
+                {linhasFolha ? '' : '≈ '}{stats.linhas}/{MAX_LINHAS} linhas{linhasFolha ? ' na folha' : ''}
               </span>
             </div>
             <textarea
@@ -217,7 +223,9 @@ export default function Escrever() {
             </div>
             <div className="mt-4">
               <div className="mb-1.5 flex justify-between text-xs font-medium text-slate-500">
-                <span>Linhas estimadas</span><span className="tabular-nums">{stats.linhas} de {MAX_LINHAS}</span>
+                <span className="flex items-center gap-1.5">{linhasFolha ? 'Linhas na folha (foto)' : 'Linhas estimadas'}
+                  {linhasFolha && <button onClick={() => setLinhasFolha(null)} className="rounded px-1 text-[11px] font-semibold text-tinta-700 hover:bg-tinta-50" title="Voltar a estimar pelo tamanho do texto">usar estimativa</button>}
+                </span><span className="tabular-nums">{stats.linhas} de {MAX_LINHAS}</span>
               </div>
               <div className="relative h-2.5 overflow-hidden rounded-full bg-slate-100">
                 <div className={cx('h-full rounded-full transition-all', longo ? 'bg-rose-500' : curto ? 'bg-amber-400' : 'bg-emerald-500')} style={{ width: `${pctLinhas}%` }} />
@@ -264,7 +272,7 @@ export default function Escrever() {
       <div className="fixed inset-x-0 bottom-[calc(78px+env(safe-area-inset-bottom))] z-30 border-t border-slate-200 bg-white/95 px-4 py-2.5 backdrop-blur-md lg:hidden">
         <div className="mx-auto flex max-w-md items-center gap-3">
           <div className="min-w-0 flex-1 text-xs leading-tight text-slate-500">
-            <p className="font-semibold tabular-nums text-slate-800">{stats.palavras} palavras · ≈{stats.linhas}/{MAX_LINHAS} linhas</p>
+            <p className="font-semibold tabular-nums text-slate-800">{stats.palavras} palavras · {linhasFolha ? '' : '≈'}{stats.linhas}/{MAX_LINHAS} linhas</p>
             <p className="truncate">{tema ? tema.titulo : 'Sem tema escolhido'}</p>
           </div>
           <Botao tamanho="sm" icone={Sparkles} onClick={corrigir} carregando={corrigindo} disabled={!texto.trim()}>Corrigir</Botao>
@@ -272,7 +280,7 @@ export default function Escrever() {
       </div>
       <SeletorTema aberto={seletor} onFechar={() => setSeletor(false)} onEscolher={setTema} />
       <EnviarFoto aberto={fotoAberta} onFechar={() => setFotoAberta(false)} temaAtual={tema}
-        onConcluir={(t, novoTema) => { setTexto(t); setOrigem('foto'); if (novoTema) setTema(novoTema) }}
+        onConcluir={(t, novoTema, linhas) => { setTexto(t); setOrigem('foto'); setLinhasFolha(linhas || null); if (novoTema) setTema(novoTema) }}
         onDigitar={() => setTimeout(() => document.querySelector('textarea[aria-label="Texto da redação"]')?.focus(), 100)} />
 
       {corrigindo && (

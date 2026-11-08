@@ -21,6 +21,7 @@ export default function EnviarFoto({ aberto, onFechar, onConcluir, onDigitar, te
   const [comIA, setComIA] = useState(false)
   const [iaSite, setIaSite] = useState(false)
   const [temaFoto, setTemaFoto] = useState('')
+  const [linhasFoto, setLinhasFoto] = useState('')
   const [escolhaTema, setEscolhaTema] = useState('atual')
   const [sugestoes, setSugestoes] = useState([])
   const galeriaRef = useRef(null)
@@ -71,6 +72,7 @@ export default function EnviarFoto({ aberto, onFechar, onConcluir, onDigitar, te
       const lido = (r.tema || '').trim()
       const sug = r.qualidade && !r.qualidade.ok ? [] : sugerirTemas({ temaLido: lido, texto: r.texto })
       setTemaFoto(lido)
+      setLinhasFoto(r.linhas ? String(r.linhas) : '')
       setSugestoes(sug)
       const quaseIgual = sug[0]?.motivo === 'titulo' && sug[0].pontos >= 1.75
       setEscolhaTema(lido ? (quaseIgual ? `site:${sug[0].tema.id}` : 'foto') : temaAtual ? 'atual' : '')
@@ -95,7 +97,8 @@ export default function EnviarFoto({ aberto, onFechar, onConcluir, onDigitar, te
     return undefined // mantém o tema atual
   }
   const concluir = () => {
-    onConcluir(texto.trim(), temaEscolhido())
+    const n = Number.parseInt(linhasFoto, 10)
+    onConcluir(texto.trim(), temaEscolhido(), Number.isInteger(n) && n >= 1 && n <= 90 ? n : null)
     onFechar()
     reiniciar()
     setFotos([])
@@ -226,6 +229,14 @@ export default function EnviarFoto({ aberto, onFechar, onConcluir, onDigitar, te
                 {fotos.map((f, i) => <img key={f.url} src={f.url} alt={`Página ${i + 1}`} className="mb-3 w-full rounded-lg shadow-sm last:mb-0" />)}
               </div>
               <div className="flex min-h-[320px] flex-col">
+                <label className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400">Linhas usadas na folha</span>
+                    <span className="block text-[11px] text-slate-500">{resultado.linhas ? 'Contadas na foto · confira e ajuste se precisar' : 'Informe quantas linhas você escreveu (até a última linha usada)'}</span>
+                  </span>
+                  <input type="number" inputMode="numeric" min="1" max="90" value={linhasFoto} onChange={(e) => setLinhasFoto(e.target.value)} placeholder="—" aria-label="Linhas usadas na folha"
+                    className="h-10 w-20 rounded-lg border border-slate-200 bg-white px-2 text-center text-base font-bold tabular-nums text-slate-900 outline-none focus:border-tinta-400 focus:ring-2 focus:ring-tinta-100" />
+                </label>
                 <fieldset className="space-y-1.5 border-b border-slate-100 px-4 py-3">
                   <legend className="sr-only">Tema da redação</legend>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Tema da redação</p>

@@ -91,12 +91,17 @@ export async function lerCorpo(req) {
 // ================================================================== instruções
 export const INSTRUCOES_TRANSCRICAO = `Você vai transcrever uma redação do ENEM escrita à mão. As imagens são as páginas, na ordem.
 
-Responda somente com um objeto JSON neste formato: {"tema": "...", "texto": "..."}
+Responda somente com um objeto JSON neste formato: {"tema": "...", "texto": "...", "linhas": 0}
 
 "tema":
 - O tema escrito à mão pelo estudante no campo TEMA da folha, copiado exatamente como está (sem corrigir).
 - Se não houver campo TEMA preenchido, use o título da redação, se houver.
 - Se não houver nenhum dos dois, use "".
+
+"linhas":
+- Quantas linhas da folha o estudante usou para escrever a redação: o número da última linha numerada que contém texto da redação (ex.: se o texto termina na linha 30, responda 30).
+- Se a folha não tiver linhas numeradas, conte as linhas manuscritas do texto da redação. Não conte tema nem título.
+- Se houver mais de uma página, some as linhas de todas.
 
 "texto" (a redação):
 - Transcreva exatamente o que o estudante escreveu. Não corrija ortografia, acentuação, gramática nem pontuação: os erros fazem parte da avaliação e precisam aparecer como estão.
@@ -110,16 +115,23 @@ export function lerTranscricao(bruto) {
   const limpo = String(bruto || '').replace(/^\s*```(?:json)?\s*|\s*```\s*$/g, '').trim()
   try {
     const r = JSON.parse(limpo.slice(limpo.indexOf('{'), limpo.lastIndexOf('}') + 1))
-    if (typeof r?.texto === 'string') return { tema: String(r.tema || '').trim().replace(/\s+/g, ' ').slice(0, 300), texto: r.texto.trim() }
+    if (typeof r?.texto === 'string') {
+      const linhas = Number.parseInt(r.linhas, 10)
+      return {
+        tema: String(r.tema || '').trim().replace(/\s+/g, ' ').slice(0, 300),
+        texto: r.texto.trim(),
+        linhas: Number.isInteger(linhas) && linhas >= 1 && linhas <= 90 ? linhas : null,
+      }
+    }
   } catch { /* não era JSON */ }
-  return { tema: '', texto: limpo }
+  return { tema: '', texto: limpo, linhas: null }
 }
 
 const ESQUEMA_TRANSCRICAO = {
   type: 'object',
   additionalProperties: false,
-  required: ['tema', 'texto'],
-  properties: { tema: { type: 'string' }, texto: { type: 'string' } },
+  required: ['tema', 'texto', 'linhas'],
+  properties: { tema: { type: 'string' }, texto: { type: 'string' }, linhas: { type: 'integer' } },
 }
 
 export const NIVEIS = [0, 40, 80, 120, 160, 200]

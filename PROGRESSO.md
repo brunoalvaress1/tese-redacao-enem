@@ -219,3 +219,11 @@ Limitações conhecidas (honestas):
   no lugar da lista solta de desvios; tocar num erro leva ao trecho destacado no texto.
 - Validado com a 2ª redação real: erros no parágrafo certo, "parágrafo de uma frase só", repertório faltando nos
   desenvolvimentos, detalhamento faltando na proposta. Testes: **60/60**.
+
+### Passo 13 — Notas por competência e linhas da folha (2026-11-08)
+- Conferido: cada competência (C1–C5) recebe nota própria de 0 a 200 e o total é a soma (verificado nas 2 redações reais).
+- Linhas: a estimativa usava 80 caracteres/linha, mas a letra de mão real das redações medidas cabe 56–64 → foto de
+  30 linhas aparecia como 23–26. Agora: (1) a IA conta as linhas usadas na folha (última linha numerada com texto) e o
+  site usa esse número real (editável na conferência), inclusive para nota zero (≤7 linhas) e aviso de 30 linhas;
+  (2) estimativa do texto digitado recalibrada para 66 caracteres/linha (redações reais: 28 e 31 linhas, eram 23 e 26).
+- Testes: **63/63**.

@@ -102,9 +102,19 @@ describe('leitura do tema na foto', async () => {
   const { lerTranscricao } = await import('./ia.js')
   it('separa tema e texto quando a IA devolve JSON (com ou sem cercas)', () => {
     expect(lerTranscricao('```json\n{"tema":"Os impactos das redes sociais","texto":"A Constituição..."}\n```'))
-      .toEqual({ tema: 'Os impactos das redes sociais', texto: 'A Constituição...' })
+      .toMatchObject({ tema: 'Os impactos das redes sociais', texto: 'A Constituição...' })
   })
   it('se a IA não devolver JSON, usa tudo como texto e deixa o tema vazio', () => {
-    expect(lerTranscricao('A Constituição Federal de 1988...')).toEqual({ tema: '', texto: 'A Constituição Federal de 1988...' })
+    expect(lerTranscricao('A Constituição Federal de 1988...')).toMatchObject({ tema: '', texto: 'A Constituição Federal de 1988...', linhas: null })
+  })
+})
+
+describe('linhas lidas na foto', async () => {
+  const { lerTranscricao } = await import('./ia.js')
+  it('lê o número de linhas usadas e descarta valores absurdos', () => {
+    expect(lerTranscricao('{"tema":"T","texto":"abc","linhas":30}').linhas).toBe(30)
+    expect(lerTranscricao('{"tema":"T","texto":"abc","linhas":"28"}').linhas).toBe(28)
+    expect(lerTranscricao('{"tema":"T","texto":"abc","linhas":500}').linhas).toBeNull()
+    expect(lerTranscricao('texto sem json').linhas).toBeNull()
   })
 })

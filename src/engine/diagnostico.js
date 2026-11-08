@@ -114,7 +114,7 @@ export function diagnosticar(r) {
   }
   if (coesao.variedade < 8 && n >= 3) gerais.push(item('melhoria', 4, `Só ${coesao.variedade} conectivo(s) diferente(s)`, 'Diversifique os elementos de ligação ao longo do texto.', { exemplo: '"ademais", "outrossim", "nesse sentido", "por conseguinte", "haja vista"' }))
   const nPal = contarPalavras(texto)
-  const linhas = estimarLinhas(texto)
+  const linhas = r.analise?.estatisticas?.linhasFolha ?? estimarLinhas(texto)
   if (nPal < 250 && nPal > 0) gerais.push(item('melhoria', 3, `Texto curto (${nPal} palavras, ≈${linhas} linhas)`, 'Redações nota alta costumam ocupar de 25 a 30 linhas. Aprofunde os argumentos.'))
   if (linhas > MAX_LINHAS) gerais.push(item('melhoria', 1, `Passa de 30 linhas (≈${linhas})`, 'Na folha oficial, o que passar da linha 30 não é lido. Corte repetições e frases longas.'))
   if (temaAnalise.status === 'parcial' && temaAnalise.ausentes?.length) gerais.push(item('melhoria', 2, 'Aborde todo o recorte do tema', `Faltou discutir: ${temaAnalise.ausentes.join(', ')}.`))

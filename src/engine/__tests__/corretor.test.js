@@ -18,7 +18,7 @@ describe('utilitários de texto', () => {
     expect(sentencas(p[1].texto, p[1].inicio)).toHaveLength(2)
   })
   it('estima linhas da folha do ENEM', () => {
-    expect(estimarLinhas('a'.repeat(140))).toBe(2)
+    expect(estimarLinhas('a'.repeat(140), 72)).toBe(2)
     expect(estimarLinhas(A.FORTE_2023)).toBeGreaterThan(20)
   })
 })
@@ -295,5 +295,23 @@ describe('diagnóstico: erros e melhorias por parágrafo', async () => {
   it('redação anulada vira a primeira prioridade', async () => {
     const r = await corrigirRedacao({ texto: A.FUGA_OBESIDADE, tema: buscarTema('in-desinformacao'), usarLanguageTool: false })
     expect(diagnosticar(r).prioridades[0].titulo).toMatch(/anulada/i)
+  })
+})
+
+describe('linhas da folha', () => {
+  it('estimativa para texto digitado fica perto das 30 linhas reais das redações manuscritas', () => {
+    expect(estimarLinhas(A.REAL_880)).toBeGreaterThanOrEqual(27)
+    expect(estimarLinhas(A.REAL_880)).toBeLessThanOrEqual(31)
+    expect(estimarLinhas(A.REAL_2)).toBeGreaterThanOrEqual(28)
+    expect(estimarLinhas(A.REAL_2)).toBeLessThanOrEqual(32)
+  })
+  it('linhas contadas na foto substituem a estimativa (e contam para nota zero e aviso de 30 linhas)', async () => {
+    const r = await corrigirRedacao({ texto: A.REAL_2, tema: null, usarLanguageTool: false, linhasFolha: 30 })
+    expect(r.analise.estatisticas.linhas).toBe(30)
+    expect(r.analise.estatisticas.linhasFolha).toBe(30)
+    const curta = await corrigirRedacao({ texto: A.REAL_2, tema: null, usarLanguageTool: false, linhasFolha: 6 })
+    expect(curta.anulacao?.motivo).toMatch(/insuficiente/i)
+    const longa = await corrigirRedacao({ texto: A.REAL_2, tema: null, usarLanguageTool: false, linhasFolha: 33 })
+    expect(longa.avisos.join(' ')).toMatch(/ocupou 33 linhas/)
   })
 })
