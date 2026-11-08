@@ -256,3 +256,25 @@ describe('calibração com redação real (outro corretor: 880)', () => {
     expect(r.competencias.c2.melhorias.join(' ')).toMatch(/3º parágrafo não traz repertório/)
   })
 })
+
+describe('calibração com a 2ª redação real', () => {
+  const tema = { id: null, titulo: 'Os desafios para garantir a proteção de crianças e adolescentes no ambiente digital brasileiro', livre: true }
+  it('detecta os 3 desvios de C1 e o agente correto da proposta', async () => {
+    const r = await corrigirRedacao({ texto: A.REAL_2, tema, usarLanguageTool: false })
+    const regras = r.marcas.filter((m) => m.competencia === 1).map((m) => m.regra)
+    expect(regras).toEqual(expect.arrayContaining(['sintaxe-lei-dever', 'virgula-verbo-complemento', 'virgula-adversativa']))
+    expect(r.analise.proposta.elementos.agente).toBe('Governo Federal')
+  })
+  it('nota fica bem abaixo de 920 (entre 760 e 840), com 4 ou 5 parágrafos e com o tema do site', async () => {
+    const quatro = A.REAL_2.replace('plataformas online.\nSegundo', 'plataformas online. Segundo')
+    for (const [texto, t] of [[A.REAL_2, tema], [quatro, tema], [quatro, buscarTema('ap-eca-digital')]]) {
+      const r = await corrigirRedacao({ texto, tema: t, usarLanguageTool: false })
+      expect(r.total).toBeGreaterThanOrEqual(760)
+      expect(r.total).toBeLessThanOrEqual(840)
+    }
+  })
+  it('as regras novas não acusam construções corretas', () => {
+    const certas = 'A Constituição Federal de 1988 garante, em seu artigo 6º, a proteção à infância. Segundo a Constituição, no artigo 227, é dever do Estado proteger. O Estado garante, a todos os cidadãos, o direito à saúde. Isso é grave; entretanto, há soluções.'
+    expect(verificarLocal(certas).filter((m) => ['sintaxe-lei-dever', 'virgula-verbo-complemento', 'virgula-adversativa'].includes(m.regra))).toEqual([])
+  })
+})

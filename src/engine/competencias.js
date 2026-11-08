@@ -353,11 +353,16 @@ export function avaliarC3({ pars, temaAnalise, projeto, repertorio }) {
   }
   for (const k of Object.keys(pontos)) pontos[k] = Math.round(pontos[k] * 100) / 100
   const total = somar(Object.values(pontos))
-  let nota = total >= 6.3 ? 200 : total >= 5.2 ? 160 : total >= 4 ? 120 : total >= 2.5 ? 80 : 40
+  let nota = total >= 6.5 ? 200 : total >= 5.4 ? 160 : total >= 4.2 ? 120 : total >= 2.6 ? 80 : 40
   const fortes = []
+  if (nota === 200 && (!projeto.anuncio || !projeto.temaEmTodos)) nota = 160
   const melhorias = []
   if (n <= 2) nota = limitar(nota, 80)
   if (temaAnalise.status === 'tangencia') nota = limitar(nota, 40)
+  if (nota === 200 && repertorio?.devSemRepertorio?.length) {
+    nota = 160
+    melhorias.push(`Para 200, cada desenvolvimento precisa de informações concretas (dados, leis, autores, fatos). O ${repertorio.devSemRepertorio.map((i) => `${i + 1}º`).join(' e o ')} parágrafo argumenta sem nenhuma fonte.`)
+  }
   if (nota === 200 && dev.some((d) => !d.desenvolvido)) {
     nota = 160
     melhorias.push('Para 200, todos os parágrafos de desenvolvimento precisam estar bem desenvolvidos (cerca de 60 palavras ou mais, com explicação e exemplo).')
@@ -441,10 +446,11 @@ export function analisarCoesao(texto, pars, temaRadicais = new Set()) {
     }
   }
   repeticoes.sort((a, b) => b.vezes - a.vezes)
+  const repeticoesLeves = Object.entries(grupos).filter(([r, lista]) => !temaRadicais.has(r) && lista.length === 4).length
 
   return {
     conectivos, inter: [...inter], intra, transicoes, transicoesOk, variedade, contagem, repetidosConectivos,
-    referenciais, repeticoes, densidadeIntra: intra.length / totalSentencas,
+    referenciais, repeticoes, repeticoesLeves, densidadeIntra: intra.length / totalSentencas,
   }
 }
 
@@ -458,9 +464,10 @@ export function avaliarC4(coesao, pars) {
   pontos += referenciais >= 3 ? 0.5 : referenciais >= 1 ? 0.25 : 0
   pontos -= Math.min(1.2, repeticoes.length * 0.4)
   pontos -= Math.min(0.6, repetidosConectivos.length * 0.3)
-  let nota = pontos >= 4.4 ? 200 : pontos >= 3.5 ? 160 : pontos >= 2.5 ? 120 : pontos >= 1.5 ? 80 : 40
+  let nota = pontos >= 4.6 ? 200 : pontos >= 3.7 ? 160 : pontos >= 2.6 ? 120 : pontos >= 1.6 ? 80 : 40
   if (pars.length <= 1) nota = limitar(nota, 80)
-  if (nota === 200 && razaoInter < 1) nota = 160
+  // 200 = articulação impecável: todas as transições, repertório coesivo amplo e nenhuma repetição relevante
+  if (nota === 200 && (razaoInter < 1 || variedade < 10 || repeticoes.length > 0 || repetidosConectivos.length > 0 || coesao.repeticoesLeves > 0)) nota = 160
 
   const fortes = []
   const melhorias = []
@@ -573,7 +580,9 @@ export function analisarProposta(texto, pars, temaGrupos) {
     const ini = m.index + m[0].length
     RE_AGENTE.lastIndex = 0
     const ma = RE_AGENTE.exec(t.slice(ini))
-    if (ma && ma.index <= 4) {
+    // aceita "cabe ao poder do Governo Federal", "cabe à figura do Ministério…"
+    const intervalo = ma ? t.slice(ini, ini + ma.index) : ''
+    if (ma && (ma.index <= 4 || /^(?:poder|figura|esfera|âmbito)\s+d[oa]s?\s+$/i.test(intervalo))) {
       agente = { inicio: base + ini + ma.index, fim: base + ini + ma.index + ma[0].length, trecho: ma[0] }
       break
     }

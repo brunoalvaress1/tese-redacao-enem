@@ -200,3 +200,12 @@ Limitações conhecidas (honestas):
   Prompt da IA também mais rigoroso.
 - Resultado: redação real → **880 nas 3 variações** (igual ao outro corretor); nota 1000 de teste segue 1000;
   demais calibrações nas faixas esperadas. A redação real virou teste permanente. Testes: **55/55**.
+
+### Passo 11 — Recalibração 2 e 3 (2026-11-08)
+- Usuário relatou 920 numa segunda redação (proteção de crianças no ambiente digital); outro corretor deu menos.
+- Ajustes: C3 e C4 com faixas mais altas; C3 = 200 exige anúncio, tema em todos os parágrafos e fontes em todos os
+  desenvolvimentos; C4 = 200 exige todas as transições, 10+ conectivos diferentes e nenhuma repetição (4+ vezes).
+  Novas regras de C1: falha de estrutura "A Constituição…, no artigo X, é dever…", vírgula entre verbo e complemento,
+  vírgula antes de "entretanto/contudo" entre orações. C5: agente após "cabe ao poder do…".
+- Resultado: 2ª redação 920 → **800** (estável em 4 variações); 1ª redação segue **880** (= outro corretor);
+  redação de teste "nota 1000" agora 960 (repetição de "públicas" 4×). Testes: **58/58**.
