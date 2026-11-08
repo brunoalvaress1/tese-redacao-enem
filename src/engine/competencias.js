@@ -191,10 +191,14 @@ export function analisarRepertorio(texto, pars) {
   const ehDesenv = (i) => n >= 3 && i > 0 && i < n - 1
   // repertório na conclusão costuma ser o agente da proposta (ex.: "Ministério da Saúde"), não argumento
   const fortes = unicos.filter((r) => !r.fraco && !(n >= 3 && r.paragrafo === n - 1))
+  const indicesDesenv = n >= 3 ? [...Array(n - 2).keys()].map((i) => i + 1) : []
+  const devSemRepertorio = indicesDesenv.filter((i) => !unicos.some((r) => r.paragrafo === i))
   return {
     itens: unicos,
     fortes: fortes.length,
     fracos: unicos.length - fortes.length,
+    devSemRepertorio,
+    todosDesenvolvimentos: indicesDesenv.length >= 2 && devSemRepertorio.length === 0,
     produtivos: fortes.filter((r) => ehDesenv(r.paragrafo) || r.paragrafo === 0).length,
     noDesenvolvimento: unicos.filter((r) => ehDesenv(r.paragrafo)).length,
   }
@@ -278,9 +282,12 @@ export function avaliarC2({ texto, pars, temaAnalise, repertorio, projeto, narra
     nota = 80
     melhorias.push('Há traços de narrativa (relato pessoal, sequência de acontecimentos). O ENEM exige texto dissertativo-argumentativo.')
   } else {
-    if (repertorio.produtivos >= 2 || (repertorio.produtivos >= 1 && repertorio.fortes >= 2)) nota = 200
+    if (repertorio.fortes >= 2 && repertorio.todosDesenvolvimentos) nota = 200
     else if (repertorio.fortes >= 1 || repertorio.fracos >= 1) nota = 160
     else nota = 120
+    if (nota === 160 && repertorio.fortes >= 1 && repertorio.devSemRepertorio.length) {
+      melhorias.push(`O ${repertorio.devSemRepertorio.map((i) => `${i + 1}º`).join(' e o ')} parágrafo não traz repertório. Para 200, cada desenvolvimento precisa de um repertório legitimado e explicado (dado, lei, autor, fato histórico…).`)
+    }
 
     if (n === 3) {
       nota = limitar(nota, 160)
@@ -304,8 +311,8 @@ export function avaliarC2({ texto, pars, temaAnalise, repertorio, projeto, narra
   }
   if (repertorio.fortes === 0 && nota > 40) {
     melhorias.push('Nenhum repertório sociocultural legitimado foi identificado. Use autores, leis, dados de instituições, fatos históricos ou obras para fundamentar os argumentos.')
-  } else if (repertorio.produtivos < 2 && nota > 40 && nota < 200) {
-    melhorias.push('Para o nível máximo, use ao menos um repertório em cada parágrafo de desenvolvimento e explique a relação dele com seu argumento (repertório produtivo).')
+  } else if (nota > 40 && nota < 200 && !repertorio.devSemRepertorio?.length) {
+    melhorias.push('Para o nível máximo, explique a relação de cada repertório com o seu argumento (repertório produtivo) e use pelo menos dois repertórios legitimados.')
   }
   RE_PRIMEIRA_PESSOA.lastIndex = 0
   if (RE_PRIMEIRA_PESSOA.test(texto)) {
@@ -351,6 +358,10 @@ export function avaliarC3({ pars, temaAnalise, projeto, repertorio }) {
   const melhorias = []
   if (n <= 2) nota = limitar(nota, 80)
   if (temaAnalise.status === 'tangencia') nota = limitar(nota, 40)
+  if (nota === 200 && dev.some((d) => !d.desenvolvido)) {
+    nota = 160
+    melhorias.push('Para 200, todos os parágrafos de desenvolvimento precisam estar bem desenvolvidos (cerca de 60 palavras ou mais, com explicação e exemplo).')
+  }
   if (repertorio && repertorio.fortes === 0 && nota > 120) {
     nota = 120
     melhorias.push('Os argumentos não se apoiam em fatos, dados ou referências: sem informações concretas, a argumentação fica limitada (nível 120 no máximo).')
@@ -449,6 +460,7 @@ export function avaliarC4(coesao, pars) {
   pontos -= Math.min(0.6, repetidosConectivos.length * 0.3)
   let nota = pontos >= 4.4 ? 200 : pontos >= 3.5 ? 160 : pontos >= 2.5 ? 120 : pontos >= 1.5 ? 80 : 40
   if (pars.length <= 1) nota = limitar(nota, 80)
+  if (nota === 200 && razaoInter < 1) nota = 160
 
   const fortes = []
   const melhorias = []
@@ -524,7 +536,7 @@ const RE_FINALIDADE = rePalavra(
 )
 const RE_DETALHE = new RegExp(
   '(?:,\\s*(?:órgão|instituição|entidade|instância|ente|responsável|principal|que\\s+(?:é|tem|possui|detém|atua|são)|o\\s+qual|a\\s+qual|os\\s+quais|as\\s+quais|cuj[oa]s?)\\b)|' +
-  '(?<![\\p{L}])(?:em\\s+parceria\\s+com|juntamente\\s+com|em\\s+conjunto\\s+com|em\\s+articulação\\s+com|com\\s+o\\s+apoio\\s+d[eoa]s?|' +
+  '(?<![\\p{L}])(?:' +
   'que\\s+(?:discutam|abordem|expliquem|mostrem|ensinem|tratem|promovam|esclareçam|apresentem|alertem|orientem|incentivem|informem|conscientizem|estimulem|valorizem)|' +
   'tais\\s+como|a\\s+exemplo\\s+d[eoa]s?|por\\s+exemplo|isto\\s+é|ou\\s+seja|especialmente|com\\s+destaque\\s+para|em\\s+especial|como\\s+(?:palestras|campanhas|oficinas|aulas|projetos|cursos|programas|rodas|debates|aplicativos|anúncios|propagandas|vídeos|cartilhas|feiras|mutirões))(?![\\p{L}])',
   'giu',

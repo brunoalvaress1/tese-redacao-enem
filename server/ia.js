@@ -135,7 +135,7 @@ Cada competência vale 0, 40, 80, 120, 160 ou 200 pontos:
 
 Nota zero total quando houver fuga completa ao tema, texto que não é dissertativo-argumentativo, até 7 linhas, impropérios ou língua estrangeira.
 
-Seja calibrado como os corretores oficiais: não infle notas e não seja punitivo sem motivo. Escreva os comentários em português, falando diretamente com o estudante, de forma concreta e construtiva.
+Seja calibrado como os corretores oficiais: não infle notas e não seja punitivo sem motivo. Dê 200 apenas quando a competência estiver excelente, sem ressalvas; na dúvida entre dois níveis, escolha o menor. Em C2, 200 exige repertório legitimado e produtivo em todos os parágrafos de desenvolvimento. Escreva os comentários em português, falando diretamente com o estudante, de forma concreta e construtiva.
 Em "desvios", liste no máximo 15 problemas reais, copiando o "trecho" exatamente como aparece no texto do estudante (mesmas letras, acentos e pontuação), para que ele possa ser destacado.`
 
 const FORMATO_JSON = `Responda somente com um objeto JSON neste formato exato:

@@ -189,3 +189,14 @@ Limitações conhecidas (honestas):
   sozinho no seletor de tema, cabeçalhos/espaçamentos menores, botões em linha, números em 2 colunas.
   Auditoria automática em 360×640: 13 telas + 5 modais sem rolagem lateral, com X visível e modais cabendo na tela.
 - Testes: **53/53**.
+
+### Passo 10 — Recalibração da nota (2026-11-08)
+- Problema relatado: redação deu 960 no nosso site e 880 no outro corretor.
+- Causa: critérios frouxos para 200. Com a leitura da foto pegando "e informar" (verbo explícito), a mesma redação
+  chegava a 920–960.
+- Ajustes: C2 só dá 200 com repertório legitimado em **todos** os desenvolvimentos; C3 só dá 200 com todos os
+  desenvolvimentos bem desenvolvidos; C4 só dá 200 com conectivo em **todas** as transições (+ "em primeiro plano",
+  "nesse âmbito" e outros conectivos comuns do ENEM); C5 não conta "em parceria com" como detalhamento.
+  Prompt da IA também mais rigoroso.
+- Resultado: redação real → **880 nas 3 variações** (igual ao outro corretor); nota 1000 de teste segue 1000;
+  demais calibrações nas faixas esperadas. A redação real virou teste permanente. Testes: **55/55**.

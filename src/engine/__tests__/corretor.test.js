@@ -237,3 +237,22 @@ describe('sugestão de temas para a foto', async () => {
     expect(s.map((x) => x.tema.id)).toContain('enem-2023')
   })
 })
+
+describe('calibração com redação real (outro corretor: 880)', () => {
+  const tema = { id: null, titulo: 'Os impactos das redes sociais na saúde mental dos adolescentes brasileiros', livre: true }
+  it('dá 880, com ou sem verbo explícito na proposta e com tema do site', async () => {
+    for (const [texto, t] of [
+      [A.REAL_880, tema],
+      [A.REAL_880.replace('e informas sobre', 'e informar sobre'), tema],
+      [A.REAL_880.replace('e informas sobre', 'e informar sobre'), buscarTema('in-saude-mental-jovens')],
+    ]) {
+      const r = await corrigirRedacao({ texto, tema: t, usarLanguageTool: false })
+      expect(r.total).toBe(880)
+    }
+  })
+  it('C2 só dá 200 com repertório em todos os desenvolvimentos', async () => {
+    const r = await corrigirRedacao({ texto: A.REAL_880, tema, usarLanguageTool: false })
+    expect(r.notas.c2).toBe(160)
+    expect(r.competencias.c2.melhorias.join(' ')).toMatch(/3º parágrafo não traz repertório/)
+  })
+})

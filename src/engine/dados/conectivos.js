@@ -23,7 +23,8 @@ export const GRUPOS_CONECTIVOS = {
     'diante dessa realidade', 'diante desse cenário', 'sendo assim', 'assim sendo', 'nesse sentido',
     'nessa perspectiva', 'sob esse viés', 'sob essa ótica', 'nesse contexto', 'nesse cenário', 'com isso',
     'por isso', 'de modo que', 'de forma que', 'à vista disso', 'em vista disso', 'assim', 'urge, portanto',
-    'infere-se', 'conclui-se', 'depreende-se', 'nessa lógica', 'nessa conjuntura', 'por essa razão',
+    'infere-se', 'conclui-se', 'depreende-se', 'nessa lógica', 'nessa conjuntura', 'por essa razão', 'por esse motivo',
+    'nesse âmbito', 'sob essa perspectiva', 'sob esse prisma', 'nessa ótica', 'à luz disso', 'diante desse quadro',
   ],
   explicação: [
     'por exemplo', 'isto é', 'ou seja', 'a exemplo de', 'de fato', 'com efeito', 'efetivamente', 'a saber',
@@ -35,7 +36,7 @@ export const GRUPOS_CONECTIVOS = {
     'tal qual', 'à semelhança de', 'do mesmo modo',
   ],
   ordem: [
-    'em primeiro lugar', 'em segundo lugar', 'em terceiro lugar', 'primeiramente', 'inicialmente',
+    'em primeiro lugar', 'em segundo lugar', 'em terceiro lugar', 'em primeiro plano', 'em segundo plano', 'primeiramente', 'inicialmente',
     'a princípio', 'em primeira análise', 'em segunda análise', 'posteriormente', 'finalmente',
     'por último', 'em seguida', 'paralelamente', 'de início',
   ],
